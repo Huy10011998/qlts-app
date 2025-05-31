@@ -19,7 +19,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        header: () => <CustomHeader />,
+        header: () => <CustomHeader />, // Custom Header giống như Home
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         tabBarButton: HapticTab,
         tabBarBackground: () => <View style={styles.tabBarBackground} />,
@@ -59,43 +59,6 @@ export default function TabLayout() {
           ),
         }}
       />
-
-      {/* <Tabs.Screen
-        name="create"
-        options={{
-          title: "",
-          tabBarIcon: ({ color }) => (
-            <View style={styles.plusButton}>
-              <FontAwesome5 name="plus" size={20} color="white" />
-            </View>
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-          },
-        }}
-      />
-
-      <Tabs.Screen
-        name="tasks"
-        options={{
-          title: "",
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="check-box" size={24} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="reports"
-        options={{
-          title: "",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="pie-chart" size={24} color={color} />
-          ),
-        }}
-      /> */}
     </Tabs>
   );
 }
@@ -121,7 +84,7 @@ const CustomHeader = () => {
         <TouchableOpacity onPress={() => router.push("/(tabs)/home")}>
           <Ionicons name="qr-code" size={24} color="#fff" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/home")}>
+        <TouchableOpacity onPress={() => router.push("/(settings)/home")}>
           <Ionicons
             name="settings-outline"
             size={24}

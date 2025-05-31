@@ -38,7 +38,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
       useNativeDriver: true,
       delay: index * 100,
     }).start();
-  }, []);
+  }, [index, scaleAnim]);
 
   return (
     <AnimatedTouchable
