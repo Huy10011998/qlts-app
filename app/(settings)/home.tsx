@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +13,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../components/auth/AuthProvider";
-import LottieView from "lottie-react-native";
 
 const user = {
   name: "Thái Minh Thanh Quốc Huy",
@@ -152,16 +152,11 @@ const SettingScreen = () => {
       </ScrollView>
 
       {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <View style={styles.loadingBox}>
-            <LottieView
-              source={require("../../assets/animations/loading.json")}
-              autoPlay
-              loop
-              style={{ width: 30, height: 30 }}
-            />
-            <Text style={styles.loadingText}>Đang đăng xuất...</Text>
-          </View>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" />
+          <Text style={{ marginTop: 8 }}>Đăng xuất...</Text>
         </View>
       )}
     </View>
@@ -240,30 +235,6 @@ const styles = StyleSheet.create({
   },
   versionNew: {
     color: "#1E90FF",
-  },
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 999,
-  },
-  loadingBox: {
-    backgroundColor: "#fff",
-    paddingVertical: 20,
-    paddingHorizontal: 30,
-    borderRadius: 12,
-    alignItems: "center",
-    elevation: 5,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: "#333",
   },
 });
 

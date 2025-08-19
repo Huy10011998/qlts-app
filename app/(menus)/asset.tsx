@@ -31,7 +31,6 @@ type Item = {
   typeGroup_MoTa: string;
   showCloseToogle: boolean;
   contentName: string;
-  isActive: boolean;
   typeGroup: number;
   parent: string | null;
   icon: string | null;
@@ -53,17 +52,15 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
   };
 
   return (
-    <View style={{ marginLeft: level * 16, marginVertical: 4 }}>
+    <View style={{ paddingLeft: level > 0 ? 16 : 0, marginVertical: 4 }}>
       <Pressable
         onPress={() => item.children && toggleExpand()}
         style={{
           flexDirection: "row",
           alignItems: "center",
-          padding: 10,
-          backgroundColor: "#fff",
+          padding: 12,
           borderRadius: 8,
           borderWidth: 1,
-          borderColor: "#ddd",
           shadowColor: "#000",
           shadowOpacity: 0.05,
           shadowRadius: 4,
@@ -72,7 +69,12 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
       >
         {item.children &&
           (expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />)}
-        <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: "500" }}>
+        <Text
+          style={{
+            marginLeft: 6,
+            fontSize: 16,
+          }}
+        >
           {item.label}
         </Text>
       </Pressable>
@@ -92,7 +94,7 @@ export default function NestedDropdownScreen() {
   const [data, setData] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Hàm build cây từ danh sách phẳng
+  // build tree từ danh sách phẳng
   const buildTree = (items: Item[]) => {
     const map: Record<string | number, Item> = {};
     const roots: Item[] = [];
@@ -168,7 +170,7 @@ export default function NestedDropdownScreen() {
       data={data}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => <DropdownItem item={item} />}
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={{ padding: 8 }}
     />
   );
 }
