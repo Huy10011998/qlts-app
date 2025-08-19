@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth / 3;
@@ -20,8 +21,8 @@ type MenuItem = {
   icon: React.ReactNode;
   label: string;
   notificationCount?: number;
+  onPress?: () => void;
 };
-
 type MenuItemCardProps = MenuItem & { index: number };
 
 const MenuItemCard: React.FC<MenuItemCardProps> = ({
@@ -29,6 +30,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
   label,
   notificationCount,
   index,
+  onPress,
 }) => {
   const scaleAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -43,6 +45,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
   return (
     <AnimatedTouchable
       style={[styles.menuItemContainer, { transform: [{ scale: scaleAnim }] }]}
+      onPress={onPress}
     >
       <View style={styles.menuItemBox}>
         <View style={styles.iconWrapper}>
@@ -60,42 +63,45 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
 };
 
 const HomeScreen: React.FC = () => {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const menuItems: MenuItem[] = [
     {
-      icon: <Ionicons name="person-add" size={24} color="white" />,
-      label: "Công việc",
-    },
-    {
-      icon: <Ionicons name="desktop" size={24} color="white" />,
-      label: "Văn phòng số",
-      notificationCount: 21,
-    },
-    {
-      icon: <Ionicons name="list" size={24} color="white" />,
-      label: "Quy trình",
-    },
-    {
-      icon: <Ionicons name="trending-up" size={24} color="white" />,
-      label: "Kinh doanh",
-    },
-    {
-      icon: <Ionicons name="book" size={24} color="white" />,
-      label: "Kế toán",
-    },
-    {
-      icon: <Ionicons name="cart" size={24} color="white" />,
-      label: "Cung ứng SX",
-    },
-    {
+      onPress: () => router.push("/(menus)/asset"),
       icon: <Ionicons name="server" size={24} color="white" />,
       label: "Tài sản",
     },
     {
-      icon: <Ionicons name="people" size={24} color="white" />,
-      label: "Nhân sự",
+      icon: <Ionicons name="person-add" size={24} color="white" />,
+      label: "Công việc",
     },
+    // {
+    //   icon: <Ionicons name="desktop" size={24} color="white" />,
+    //   label: "Văn phòng số",
+    //   notificationCount: 21,
+    // },
+    // {
+    //   icon: <Ionicons name="list" size={24} color="white" />,
+    //   label: "Quy trình",
+    // },
+    // {
+    //   icon: <Ionicons name="trending-up" size={24} color="white" />,
+    //   label: "Kinh doanh",
+    // },
+    // {
+    //   icon: <Ionicons name="book" size={24} color="white" />,
+    //   label: "Kế toán",
+    // },
+    // {
+    //   icon: <Ionicons name="cart" size={24} color="white" />,
+    //   label: "Cung ứng SX",
+    // },
+
+    // {
+    //   icon: <Ionicons name="people" size={24} color="white" />,
+    //   label: "Nhân sự",
+    // },
     {
       icon: <Ionicons name="pricetag" size={24} color="white" />,
       label: "Ticket",
@@ -169,6 +175,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     textAlign: "center",
+    fontWeight: "500",
   },
 });
 

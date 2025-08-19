@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -79,17 +79,19 @@ const SettingScreen = () => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await Promise.all([
+        SecureStore.deleteItemAsync("faceid_credentials"),
+        AsyncStorage.removeItem("token"),
+      ]);
 
-      await SecureStore.deleteItemAsync("faceid_credentials");
-      await AsyncStorage.removeItem("userData");
-      await AsyncStorage.removeItem("token");
+      setToken(null); // sẽ trigger re-render
 
-      setToken(null);
-
-      router.replace("/");
+      router.replace("/"); // reset về login
     } catch (error) {
-      console.error("Logout error:", error);
+      if (__DEV__) {
+        console.error("Logout error:", error);
+      }
+      Alert.alert("Lỗi", "Không thể đăng xuất. Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
     }

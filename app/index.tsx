@@ -19,23 +19,24 @@ import { useAuth } from "../components/auth/AuthProvider";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedTextInput } from "../components/ThemedTextInput";
 import { ThemedView } from "../components/ThemedView";
+import { md5Hash } from "../utils/hash";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userPassword, setUserPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoginDisabled, setIsLoginDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const { setUserData, setToken } = useAuth();
+  const { setToken } = useAuth();
   const hasTriedFaceID = useRef(false);
 
   useEffect(() => {
-    setIsLoginDisabled(!(userId.trim() && password.trim()));
-  }, [userId, password]);
+    setIsLoginDisabled(!(userName.trim() && userPassword.trim()));
+  }, [userName, userPassword]);
 
   useFocusEffect(
     useCallback(() => {
@@ -55,21 +56,20 @@ export default function LoginScreen() {
             });
 
             if (result.success) {
-              const { userId, password } = JSON.parse(savedData);
+              const { userName, userPassword } = JSON.parse(savedData);
               try {
                 const response = await axios.post(
-                  "https://hrcert.cholimexfood.com.vn/api/auth/login",
-                  { userId, password }
+                  "http://192.168.10.210:8869/api/Authorization/login",
+                  { userName, userPassword }
                 );
 
                 if (response.status === 200) {
-                  const userData = response.data.data;
-                  setUserData(userData);
-                  setToken(response.data.token);
+                  setToken(response.data.data.accessToken);
 
                   router.replace("/(tabs)/home");
                 }
-              } catch {
+              } catch (error) {
+                console.error("Login error:", error);
                 Alert.alert("Lỗi", "Không thể đăng nhập tự động.");
               }
             }
@@ -78,7 +78,7 @@ export default function LoginScreen() {
       };
 
       tryAutoLoginWithFaceID();
-    }, [setUserData, setToken, router])
+    }, [setToken, router])
   );
 
   const handlePressLogin = async () => {
@@ -86,16 +86,16 @@ export default function LoginScreen() {
     Keyboard.dismiss();
     setIsLoading(true);
 
+    const hashedPassword = await md5Hash(userPassword);
+
     try {
       const response = await axios.post(
-        "https://hrcert.cholimexfood.com.vn/api/auth/login",
-        { userId, password }
+        "http://192.168.10.210:8869/api/Authorization/login",
+        { userName, userPassword: hashedPassword }
       );
 
       if (response.status === 200) {
-        const userData = response.data.data;
-        setUserData(userData);
-        setToken(response.data.token);
+        setToken(response.data.data.accessToken);
 
         Alert.alert(
           "Lưu đăng nhập?",
@@ -114,10 +114,10 @@ export default function LoginScreen() {
                 try {
                   await SecureStore.setItemAsync(
                     "faceid_credentials",
-                    JSON.stringify({ userId, password })
+                    JSON.stringify({ userName, userPassword: hashedPassword })
                   );
-                } catch (e) {
-                  console.warn("Không thể lưu thông tin FaceID:", e);
+                } catch (error) {
+                  console.warn("Không thể lưu thông tin FaceID:", error);
                 }
 
                 router.replace("/(tabs)/home");
@@ -126,9 +126,10 @@ export default function LoginScreen() {
           ]
         );
       }
-    } catch {
+    } catch (error) {
+      console.error("Login error:", error);
       Alert.alert("Đăng nhập thất bại", "Sai tài khoản hoặc mật khẩu.");
-      setPassword("");
+      setUserPassword("");
     } finally {
       setIsLoading(false);
     }
@@ -159,14 +160,27 @@ export default function LoginScreen() {
           return;
         }
 
-        const { userId, password } = JSON.parse(savedData);
-        setUserId(userId);
-        setPassword(password);
-        handlePressLogin();
-      } else {
-        Alert.alert("Thất bại", "Xác thực Face ID không thành công.");
+        const { userName, userPassword } = JSON.parse(savedData); // userPassword = MD5 rồi
+        console.log("userPassword:", userPassword);
+        try {
+          const response = await axios.post(
+            "http://192.168.10.210:8869/api/Authorization/login",
+            { userName, userPassword }
+          );
+          if (response.status === 200) {
+            setToken(response.data.data.accessToken);
+            router.replace("/(tabs)/home");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          Alert.alert(
+            "Đăng nhập thất bại",
+            "Không thể đăng nhập bằng Face ID."
+          );
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error("Login error:", error);
       Alert.alert("Lỗi", "Đã xảy ra lỗi khi xác thực Face ID.");
     } finally {
       setIsLoading(false);
@@ -186,15 +200,15 @@ export default function LoginScreen() {
         <ThemedView style={[styles.contaiInput, { flex: 0.5 }]}>
           <ThemedTextInput
             placeholder="Tài khoản"
-            value={userId}
-            onChangeText={setUserId}
+            value={userName}
+            onChangeText={setUserName}
           />
           <ThemedView style={styles.contaiInputPW}>
             <ThemedTextInput
               secureTextEntry={!isPasswordVisible}
               placeholder="Mật khẩu"
-              value={password}
-              onChangeText={setPassword}
+              value={userPassword}
+              onChangeText={setUserPassword}
             />
             <TouchableOpacity
               style={styles.iconEyeContainer}
