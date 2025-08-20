@@ -1,5 +1,4 @@
 import { useFocusEffect } from "@react-navigation/native";
-import axios from "axios";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -19,7 +18,7 @@ import { useAuth } from "../components/auth/AuthProvider";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedTextInput } from "../components/ThemedTextInput";
 import { ThemedView } from "../components/ThemedView";
-import { md5Hash } from "../utils/hash";
+import { loginApi } from "../services";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -31,8 +30,12 @@ export default function LoginScreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoginDisabled, setIsLoginDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const { setToken } = useAuth();
+  const { token, setToken } = useAuth();
   const hasTriedFaceID = useRef(false);
+
+  useEffect(() => {
+    console.log("Current token:", token);
+  }, [token]);
 
   useEffect(() => {
     setIsLoginDisabled(!(userName.trim() && userPassword.trim()));
@@ -58,15 +61,13 @@ export default function LoginScreen() {
             if (result.success) {
               const { userName, userPassword } = JSON.parse(savedData);
               try {
-                const response = await axios.post(
-                  "http://192.168.10.210:8869/api/Authorization/login",
-                  { userName, userPassword }
-                );
+                const response = await loginApi(userName, userPassword);
 
-                if (response.status === 200) {
-                  setToken(response.data.data.accessToken);
-
+                if (response?.data?.accessToken) {
+                  setToken(response.data.accessToken);
                   router.replace("/(tabs)/home");
+                } else {
+                  Alert.alert("Lỗi", "Phản hồi không hợp lệ từ server.");
                 }
               } catch (error) {
                 console.error("Login error:", error);
@@ -86,16 +87,11 @@ export default function LoginScreen() {
     Keyboard.dismiss();
     setIsLoading(true);
 
-    const hashedPassword = await md5Hash(userPassword);
-
     try {
-      const response = await axios.post(
-        "http://192.168.10.210:8869/api/Authorization/login",
-        { userName, userPassword: hashedPassword }
-      );
+      const response = await loginApi(userName, userPassword);
 
-      if (response.status === 200) {
-        setToken(response.data.data.accessToken);
+      if (response?.data?.accessToken) {
+        setToken(response.data.accessToken);
 
         Alert.alert(
           "Lưu đăng nhập?",
@@ -114,12 +110,11 @@ export default function LoginScreen() {
                 try {
                   await SecureStore.setItemAsync(
                     "faceid_credentials",
-                    JSON.stringify({ userName, userPassword: hashedPassword })
+                    JSON.stringify({ userName, userPassword })
                   );
                 } catch (error) {
                   console.warn("Không thể lưu thông tin FaceID:", error);
                 }
-
                 router.replace("/(tabs)/home");
               },
             },
@@ -153,31 +148,31 @@ export default function LoginScreen() {
         fallbackLabel: "Dùng mật khẩu",
       });
 
-      if (result.success) {
-        const savedData = await SecureStore.getItemAsync("faceid_credentials");
-        if (!savedData) {
-          Alert.alert("Không tìm thấy thông tin đăng nhập đã lưu.");
-          return;
-        }
+      if (!result.success) return;
 
-        const { userName, userPassword } = JSON.parse(savedData); // userPassword = MD5 rồi
-        console.log("userPassword:", userPassword);
-        try {
-          const response = await axios.post(
-            "http://192.168.10.210:8869/api/Authorization/login",
-            { userName, userPassword }
-          );
-          if (response.status === 200) {
-            setToken(response.data.data.accessToken);
-            router.replace("/(tabs)/home");
-          }
-        } catch (error) {
-          console.error("Login error:", error);
-          Alert.alert(
-            "Đăng nhập thất bại",
-            "Không thể đăng nhập bằng Face ID."
-          );
+      const savedData = await SecureStore.getItemAsync("faceid_credentials");
+      if (!savedData) {
+        Alert.alert("Không tìm thấy thông tin đăng nhập đã lưu.");
+        return;
+      }
+
+      const { userName, userPassword } = JSON.parse(savedData); // userPassword đã MD5
+      if (!userName || !userPassword) {
+        Alert.alert("Thông tin đăng nhập không hợp lệ.");
+        return;
+      }
+      try {
+        const response = await loginApi(userName, userPassword);
+
+        if (response?.data?.accessToken) {
+          setToken(response.data.accessToken);
+          router.replace("/(tabs)/home");
+        } else {
+          Alert.alert("Đăng nhập thất bại", "Phản hồi không hợp lệ từ server.");
         }
+      } catch (error) {
+        console.error("Login error:", error);
+        Alert.alert("Đăng nhập thất bại", "Không thể đăng nhập bằng Face ID.");
       }
     } catch (error) {
       console.error("Login error:", error);

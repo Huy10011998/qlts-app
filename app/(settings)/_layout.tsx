@@ -8,7 +8,7 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="home"
         options={({ navigation }) => ({
-          title: "Setting",
+          title: "Cài đặt",
           headerStyle: {
             backgroundColor: "#FF3333",
           },

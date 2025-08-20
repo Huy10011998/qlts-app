@@ -1,4 +1,3 @@
-// app/(menus)/NestedDropdown.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -11,9 +10,9 @@ import {
   Platform,
   UIManager,
 } from "react-native";
-import axios from "axios";
-import { ChevronDown, ChevronRight } from "lucide-react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FolderOpen, Folder, Pin } from "lucide-react-native";
+import api from "@/services/api";
+import { API_ENDPOINTS } from "@/config";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -30,7 +29,7 @@ type Item = {
   parent_MoTa: string | null;
   typeGroup_MoTa: string;
   showCloseToogle: boolean;
-  contentName: string;
+  contentName: string | null;
   typeGroup: number;
   parent: string | null;
   icon: string | null;
@@ -51,10 +50,13 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
     setExpanded(!expanded);
   };
 
+  const hasChildren = item.children && item.children.length > 0;
+  const isPinned = item.contentName === null; // điều kiện để hiện icon ghim
+
   return (
-    <View style={{ paddingLeft: level > 0 ? 16 : 0, marginVertical: 4 }}>
+    <View style={{ paddingLeft: level > 0 ? 20 : 0, marginVertical: 4 }}>
       <Pressable
-        onPress={() => item.children && toggleExpand()}
+        onPress={() => hasChildren && toggleExpand()}
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -67,21 +69,30 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
           elevation: 1,
         }}
       >
-        {item.children &&
-          (expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />)}
+        {hasChildren ? (
+          expanded ? (
+            <FolderOpen size={18} color="red" />
+          ) : (
+            <Folder size={18} color="red" />
+          )
+        ) : !isPinned ? (
+          <Pin size={18} color="red" />
+        ) : null}
+
         <Text
           style={{
             marginLeft: 6,
-            fontSize: 16,
+            fontSize: 13,
+            fontWeight: "bold",
           }}
         >
           {item.label}
         </Text>
       </Pressable>
 
-      {expanded && item.children && (
+      {expanded && hasChildren && (
         <View style={{ marginTop: 4 }}>
-          {item.children.map((child) => (
+          {item.children?.map((child) => (
             <DropdownItem key={child.id} item={child} level={level + 1} />
           ))}
         </View>
@@ -92,7 +103,7 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
 
 export default function NestedDropdownScreen() {
   const [data, setData] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // build tree từ danh sách phẳng
   const buildTree = (items: Item[]) => {
@@ -117,25 +128,9 @@ export default function NestedDropdownScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          Alert.alert("Lỗi", "Không tìm thấy token, vui lòng đăng nhập lại.");
-          setLoading(false);
-          return;
-        }
+        const response = await api.post(API_ENDPOINTS.GET_MENU_ACTIVE, {});
 
-        const response = await axios.post(
-          "http://192.168.10.210:8869/api/Common/get-menu-active",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json;charset=UTF-8",
-            },
-          }
-        );
-
-        if (response.status === 200 && Array.isArray(response.data.data)) {
+        if (Array.isArray(response?.data?.data)) {
           const menuAccount = response.data.data
             .filter((item: Item) => item.typeGroup === 0)
             .sort((a: Item, b: Item) => Number(a.stt) - Number(b.stt));
@@ -149,18 +144,17 @@ export default function NestedDropdownScreen() {
         if (__DEV__) console.error("API error:", error);
         Alert.alert("Lỗi", "Không thể tải dữ liệu menu.");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 8 }}>Đang tải dữ liệu...</Text>
       </View>
     );
   }
@@ -170,7 +164,7 @@ export default function NestedDropdownScreen() {
       data={data}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => <DropdownItem item={item} />}
-      contentContainerStyle={{ padding: 8 }}
+      contentContainerStyle={{ padding: 12 }}
     />
   );
 }

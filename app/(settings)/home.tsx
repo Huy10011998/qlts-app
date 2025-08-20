@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,11 +12,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../components/auth/AuthProvider";
-
-const user = {
-  name: "Thái Minh Thanh Quốc Huy",
-  avatar: null,
-};
+import LottieView from "lottie-react-native";
+import { API_ENDPOINTS } from "@/config";
+import api from "@/services/api";
 
 const ProfileHeader = ({ name }: { name: string }) => (
   <View style={styles.profileHeader}>
@@ -49,30 +46,31 @@ const SettingItem = ({
   </TouchableOpacity>
 );
 
-const VersionInfo = ({
-  current,
-  latest,
-}: {
-  current: string;
-  latest: string;
-}) => (
-  <View style={styles.versionWrapper}>
-    <Text style={styles.versionTitle}>Phiên bản</Text>
-    <View style={styles.versionRow}>
-      <Text>Phiên bản hiện tại</Text>
-      <Text>{current}</Text>
-    </View>
-    <View style={styles.versionRow}>
-      <Text>Phiên bản mới nhất</Text>
-      <Text style={styles.versionNew}>{latest}</Text>
-    </View>
-  </View>
-);
-
 const SettingScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { setToken } = useAuth();
+  const [user, setUser] = useState<string | undefined>(undefined);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.post(API_ENDPOINTS.GET_INFO, {});
+
+        const userData = response?.data?.data?.moTa;
+
+        setUser(userData);
+      } catch (error) {
+        if (__DEV__) console.error("API error:", error);
+        Alert.alert("Lỗi", "Không thể tải thông tin người dùng.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const handlePressLogout = async () => {
     if (isLoading) return;
@@ -84,9 +82,9 @@ const SettingScreen = () => {
         AsyncStorage.removeItem("token"),
       ]);
 
-      setToken(null); // sẽ trigger re-render
+      setToken(null);
 
-      router.replace("/"); // reset về login
+      router.replace("/");
     } catch (error) {
       if (__DEV__) {
         console.error("Logout error:", error);
@@ -108,16 +106,16 @@ const SettingScreen = () => {
       label: "Đổi mật khẩu/Change Password",
       onPress: () => {},
     },
-    {
-      icon: <Ionicons name="language-outline" size={22} color="#fff" />,
-      label: "Ngôn ngữ/Language",
-      onPress: () => {},
-    },
-    {
-      icon: <Ionicons name="phone-portrait-outline" size={22} color="#fff" />,
-      label: "Thiết bị/Device",
-      onPress: () => {},
-    },
+    // {
+    //   icon: <Ionicons name="language-outline" size={22} color="#fff" />,
+    //   label: "Ngôn ngữ/Language",
+    //   onPress: () => {},
+    // },
+    // {
+    //   icon: <Ionicons name="phone-portrait-outline" size={22} color="#fff" />,
+    //   label: "Thiết bị/Device",
+    //   onPress: () => {},
+    // },
     {
       icon: <Ionicons name="log-out-outline" size={22} color="#fff" />,
       label: "Đăng xuất / Log out",
@@ -142,21 +140,24 @@ const SettingScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-        <ProfileHeader name={user.name} />
+        <ProfileHeader name={user ?? ""} />
         <View style={styles.section}>
           {settings.map((item, index) => (
             <SettingItem key={index} {...item} />
           ))}
         </View>
-        <VersionInfo current="8.9.3" latest="8.9.3" />
       </ScrollView>
 
       {isLoading && (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" />
-          <Text style={{ marginTop: 8 }}>Đăng xuất...</Text>
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingBox}>
+            <LottieView
+              source={require("../../assets/animations/loading.json")}
+              autoPlay
+              loop
+              style={{ width: 30, height: 30 }}
+            />
+          </View>
         </View>
       )}
     </View>
@@ -190,7 +191,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: "bold",
-    color: "#2D4B73",
   },
   section: {
     paddingHorizontal: 16,
@@ -213,8 +213,8 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
-    fontSize: 14,
-    color: "#2D4B73",
+    fontSize: 13,
+    fontWeight: "bold",
   },
   chevron: {
     marginLeft: 6,
@@ -235,6 +235,25 @@ const styles = StyleSheet.create({
   },
   versionNew: {
     color: "#1E90FF",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  loadingBox: {
+    backgroundColor: "#fff",
+    paddingVertical: 20,
+    paddingHorizontal: 30,
+    borderRadius: 12,
+    alignItems: "center",
+    elevation: 5,
   },
 });
 
