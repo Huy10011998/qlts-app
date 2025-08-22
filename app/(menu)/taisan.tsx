@@ -13,6 +13,7 @@ import {
 import { FolderOpen, Folder, Pin } from "lucide-react-native";
 import api from "@/services/api";
 import { API_ENDPOINTS } from "@/config";
+import { useRouter } from "expo-router";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -29,12 +30,13 @@ type Item = {
   parent_MoTa: string | null;
   typeGroup_MoTa: string;
   showCloseToogle: boolean;
-  contentName: string | null;
+  contentName: string | null; // dùng để điều hướng
   typeGroup: number;
   parent: string | null;
   icon: string | null;
   stt: string | number;
   isReport: string | null;
+  contentName_Mobile: string | null; // dùng để điều hướng trên mobile
 };
 
 type Props = {
@@ -43,20 +45,25 @@ type Props = {
 };
 
 const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
 
-  const toggleExpand = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded(!expanded);
-  };
-
   const hasChildren = item.children && item.children.length > 0;
-  const isPinned = item.contentName === null; // điều kiện để hiện icon ghim
+  const isPinned = item.contentName === null;
+
+  const handlePress = () => {
+    if (hasChildren) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setExpanded(!expanded);
+    } else if (item.contentName_Mobile) {
+      router.push(item.contentName_Mobile as any);
+    }
+  };
 
   return (
     <View style={{ paddingLeft: level > 0 ? 20 : 0, marginVertical: 4 }}>
       <Pressable
-        onPress={() => hasChildren && toggleExpand()}
+        onPress={handlePress}
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -79,13 +86,7 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
           <Pin size={18} color="red" />
         ) : null}
 
-        <Text
-          style={{
-            marginLeft: 6,
-            fontSize: 13,
-            fontWeight: "bold",
-          }}
-        >
+        <Text style={{ marginLeft: 6, fontSize: 13, fontWeight: "bold" }}>
           {item.label}
         </Text>
       </Pressable>
@@ -105,7 +106,6 @@ export default function NestedDropdownScreen() {
   const [data, setData] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // build tree từ danh sách phẳng
   const buildTree = (items: Item[]) => {
     const map: Record<string | number, Item> = {};
     const roots: Item[] = [];
@@ -129,7 +129,6 @@ export default function NestedDropdownScreen() {
     const fetchData = async () => {
       try {
         const response = await api.post(API_ENDPOINTS.GET_MENU_ACTIVE, {});
-
         if (Array.isArray(response?.data?.data)) {
           const menuAccount = response.data.data
             .filter((item: Item) => item.typeGroup === 0)
@@ -153,9 +152,11 @@ export default function NestedDropdownScreen() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <ActivityIndicator
+        size="large"
+        color="#FF3333"
+        style={{ justifyContent: "center", flex: 1 }}
+      />
     );
   }
 

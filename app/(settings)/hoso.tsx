@@ -1,0 +1,143 @@
+import { API_ENDPOINTS } from "@/config";
+import api from "@/services/api";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+
+interface User {
+  moTa?: string;
+  email?: string;
+  donVi?: string;
+  phongBan?: string;
+  boPhan?: string;
+  toNhom?: string;
+  chucVu?: string;
+  chucDanh?: string;
+  avatarUrl?: string;
+}
+
+const ProfileScreen: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.post(API_ENDPOINTS.GET_INFO, {});
+        const userData: User = response?.data?.data;
+        setUser(userData);
+      } catch (error) {
+        if (__DEV__) console.error("API error:", error);
+        Alert.alert("Lỗi", "Không thể tải thông tin người dùng.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+  const renderRow = (label: string, value?: string) => (
+    <View style={styles.row}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value || "---"}</Text>
+    </View>
+  );
+
+  if (isLoading || !user) {
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#FF3333"
+        style={{ justifyContent: "center", flex: 1 }}
+      />
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.avatarWrapper}>
+          {user.avatarUrl ? (
+            <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+          ) : (
+            <Text style={styles.avatarText}>{user.moTa?.charAt(0) ?? "?"}</Text>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.infoSection}>
+        {renderRow("Họ và tên:", user.moTa)}
+        {renderRow("Email:", user.email)}
+        {renderRow("Đơn vị:", user.donVi)}
+        {renderRow("Phòng ban:", user.phongBan)}
+        {renderRow("Bộ phận:", user.boPhan)}
+        {renderRow("Tổ nhóm:", user.toNhom)}
+        {renderRow("Chức vụ:", user.chucVu)}
+        {renderRow("Chức danh:", user.chucDanh)}
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  header: {
+    alignItems: "center",
+    paddingVertical: 32,
+  },
+  avatarWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    backgroundColor: "#FF3333",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  avatar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 20,
+    resizeMode: "cover",
+  },
+  avatarText: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  infoSection: {
+    padding: 16,
+  },
+  row: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  label: {
+    flex: 1,
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  value: {
+    flex: 2,
+    fontSize: 14,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
+export default ProfileScreen;

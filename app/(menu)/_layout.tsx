@@ -2,11 +2,11 @@ import { Stack } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function MenusLayout() {
+export default function MenuLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="asset"
+        name="taisan"
         options={({ navigation }) => ({
           title: "Tài sản",
           headerStyle: {

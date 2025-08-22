@@ -68,7 +68,7 @@ const HomeScreen: React.FC = () => {
 
   const menuItems: MenuItem[] = [
     {
-      onPress: () => router.push("/(menus)/asset"),
+      onPress: () => router.push("/(menu)/taisan"),
       icon: <Ionicons name="server" size={24} color="white" />,
       label: "Tài sản",
     },

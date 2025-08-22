@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { API_ENDPOINTS, BASE_URL } from "@/config";
 
 // Biến global để tránh gọi refresh token nhiều lần cùng lúc
@@ -99,19 +100,31 @@ api.interceptors.response.use(
   }
 );
 
-// Hàm call API chung
 export const apiCall = async (
   endpoint: string,
   method: "GET" | "POST" = "GET",
   body: any = {}
 ) => {
-  const response = await api({
-    method,
-    url: endpoint,
-    data: method === "POST" ? body : undefined,
-  });
+  try {
+    // Lấy token từ SecureStore
+    const token = await SecureStore.getItemAsync("token");
 
-  return response.data;
+    const response = await api({
+      method,
+      url: endpoint,
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+      data: method === "POST" ? body : undefined,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("API Call Error:", error);
+    throw error;
+  }
 };
 
 export default api;
