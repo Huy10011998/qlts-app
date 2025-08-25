@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   cancelButton: { backgroundColor: "#ccc" },
-  confirmButton: { backgroundColor: "#007BFF" },
+  confirmButton: { backgroundColor: "#FF3333" },
   buttonText: { color: "#fff", fontWeight: "bold" },
 });
 

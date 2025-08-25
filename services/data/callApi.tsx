@@ -71,3 +71,29 @@ export const getFieldActive = async (iD_Class_MoTa: string) => {
     throw error;
   }
 };
+
+export const getPropertyClass = async (nameClass: string) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+    }
+
+    const config = {
+      method: "POST" as const,
+      url: `${BASE_URL}/Common/get-class-by-name`,
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        nameClass,
+      },
+    };
+    const response = await axios(config);
+    return response.data;
+  } catch (error) {
+    if (__DEV__) console.error("GetList May Tinh API error:", error);
+    throw error;
+  }
+};

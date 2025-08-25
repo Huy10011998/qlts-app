@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import { useRouter, Href } from "expo-router";
+import { useRouter, usePathname, Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 type ButtonItem = {
@@ -25,7 +25,6 @@ const buttons: ButtonItem[] = [
     root: "/(home)/trangchu",
     icon: "home",
   },
-
   {
     id: 3,
     name: "Cài đặt",
@@ -35,9 +34,8 @@ const buttons: ButtonItem[] = [
   },
 ];
 
-type BottomBarProps = {
-  visible?: boolean;
-};
+const ACTIVE = "#e74c3c";
+const INACTIVE = "#888";
 
 function BottomBarButton({
   btn,
@@ -68,9 +66,9 @@ function BottomBarButton({
         <Ionicons
           name={btn.icon}
           size={26}
-          color={isActive ? "#e74c3c" : "#888"}
+          color={isActive ? ACTIVE : INACTIVE}
         />
-        <Text style={[styles.label, { color: isActive ? "#e74c3c" : "#888" }]}>
+        <Text style={[styles.label, { color: isActive ? ACTIVE : INACTIVE }]}>
           {btn.name}
         </Text>
       </Animated.View>
@@ -78,27 +76,40 @@ function BottomBarButton({
   );
 }
 
-export default function BottomBar({ visible = true }: BottomBarProps) {
+export default function BottomBar({ visible = true }: { visible?: boolean }) {
   const router = useRouter();
+  const pathname = usePathname();
+
   const [activeId, setActiveId] = useState<number>(1);
+  const [lastActiveId, setLastActiveId] = useState<number>(1);
+
+  // Tự động active dựa vào pathname
+  useEffect(() => {
+    const matched = buttons.find((btn) => pathname.startsWith(btn.route));
+    if (matched) {
+      setActiveId(matched.id);
+      setLastActiveId(matched.id); // lưu id này làm last active
+    } else {
+      // nếu route hiện tại không match tab nào, giữ tab được bấm gần nhất
+      setActiveId(lastActiveId);
+    }
+  }, [pathname, lastActiveId]);
 
   if (!visible) return null;
 
   return (
     <View style={styles.container}>
       {buttons.map((btn) => {
-        const isActive = btn.id === activeId;
-
+        const isActive = activeId === btn.id;
         return (
           <BottomBarButton
             key={btn.id}
             btn={btn}
             isActive={isActive}
             onPress={() => {
-              if (!isActive) {
-                setActiveId(btn.id);
-                router.replace(btn.route as Href);
-              }
+              setActiveId(btn.id);
+              setLastActiveId(btn.id); // lưu lại tab bấm cuối cùng
+              router.replace(btn.route as Href);
             }}
           />
         );
@@ -123,11 +134,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     elevation: 5,
   },
-  button: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  button: { flex: 1, justifyContent: "center", alignItems: "center" },
   innerButton: {
     justifyContent: "center",
     alignItems: "center",
