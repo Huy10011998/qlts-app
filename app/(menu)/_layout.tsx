@@ -19,13 +19,24 @@ export default function MenuLayout() {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => navigation.canGoBack() && navigation.goBack()}
+              style={{ paddingHorizontal: 10 }}
             >
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
           ),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => {
+                console.log("Search icon pressed");
+                // Thêm hành động mở modal hoặc điều hướng sang màn hình tìm kiếm tại đây
+              }}
+              style={{ paddingHorizontal: 10 }}
+            >
+              <Ionicons name="search" size={24} color="#fff" />
+            </TouchableOpacity>
+          ),
         })}
       />
-      {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
     </Stack>
   );
 }

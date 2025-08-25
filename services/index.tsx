@@ -1,2 +1,3 @@
-export * from "./api";
-export * from "./authApi";
+export * from "./data/api";
+export * from "./auth/authApi";
+export { getList, getFieldActive, getPropertyClass } from "./data/callApi";

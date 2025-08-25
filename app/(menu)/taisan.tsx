@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,11 +9,13 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  TextInput,
 } from "react-native";
 import { FolderOpen, Folder, Pin } from "lucide-react-native";
-import api from "@/services/api";
+import api from "@/services/data/api";
 import { API_ENDPOINTS } from "@/config";
 import { useRouter } from "expo-router";
+import { removeVietnameseTones } from "@/utils/helper";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -23,38 +25,43 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-type Item = {
+interface Item {
   id: string | number;
   label: string;
-  children?: Item[];
+  parent: string | number | null;
   parent_MoTa: string | null;
   typeGroup_MoTa: string;
   showCloseToogle: boolean;
-  contentName: string | null; // dùng để điều hướng
+  contentName: string | null;
   typeGroup: number;
-  parent: string | null;
-  icon: string | null;
+  children: Item[];
+  contentName_Mobile: string | null;
   stt: string | number;
-  isReport: string | null;
-  contentName_Mobile: string | null; // dùng để điều hướng trên mobile
-};
+}
 
 type Props = {
   item: Item;
   level?: number;
+  expandedIds: (string | number)[];
+  onToggle: (id: string | number) => void;
 };
 
-const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
-  const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
+// Xử lý chuỗi không dấu + thường
 
+const DropdownItem: React.FC<Props> = ({
+  item,
+  level = 0,
+  expandedIds,
+  onToggle,
+}) => {
+  const router = useRouter();
   const hasChildren = item.children && item.children.length > 0;
-  const isPinned = item.contentName === null;
+  const expanded = expandedIds.includes(item.id);
 
   const handlePress = () => {
     if (hasChildren) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setExpanded(!expanded);
+      onToggle(item.id);
     } else if (item.contentName_Mobile) {
       router.push(item.contentName_Mobile as any);
     }
@@ -76,15 +83,13 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
           elevation: 1,
         }}
       >
-        {hasChildren ? (
-          expanded ? (
-            <FolderOpen size={18} color="red" />
-          ) : (
-            <Folder size={18} color="red" />
-          )
-        ) : !isPinned ? (
+        {item.contentName ? (
           <Pin size={18} color="red" />
-        ) : null}
+        ) : expanded ? (
+          <FolderOpen size={18} color="red" />
+        ) : (
+          <Folder size={18} color="red" />
+        )}
 
         <Text style={{ marginLeft: 6, fontSize: 13, fontWeight: "bold" }}>
           {item.label}
@@ -93,8 +98,14 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
 
       {expanded && hasChildren && (
         <View style={{ marginTop: 4 }}>
-          {item.children?.map((child) => (
-            <DropdownItem key={child.id} item={child} level={level + 1} />
+          {item.children.map((child) => (
+            <DropdownItem
+              key={child.id}
+              item={child}
+              level={level + 1}
+              expandedIds={expandedIds}
+              onToggle={onToggle}
+            />
           ))}
         </View>
       )}
@@ -102,27 +113,78 @@ const DropdownItem: React.FC<Props> = ({ item, level = 0 }) => {
   );
 };
 
-export default function NestedDropdownScreen() {
+export default function TaiSanScreen() {
   const [data, setData] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [expandedIds, setExpandedIds] = useState<(string | number)[]>([]);
 
+  // Xây dựng cây từ danh sách phẳng
   const buildTree = (items: Item[]) => {
     const map: Record<string | number, Item> = {};
     const roots: Item[] = [];
-
     items.forEach((item) => {
       map[item.id] = { ...item, children: [] };
     });
-
     items.forEach((item) => {
       if (item.parent === null) {
         roots.push(map[item.id]);
       } else if (map[item.parent]) {
-        map[item.parent].children?.push(map[item.id]);
+        map[item.parent].children.push(map[item.id]);
       }
     });
-
     return roots;
+  };
+
+  // Lấy tất cả ID của node và children
+  const collectAllIds = (items: Item[]): (string | number)[] => {
+    const ids: (string | number)[] = [];
+    const traverse = (nodes: Item[]) => {
+      for (const node of nodes) {
+        ids.push(node.id);
+        if (node.children.length > 0) {
+          traverse(node.children);
+        }
+      }
+    };
+    traverse(items);
+    return ids;
+  };
+
+  // Lọc dữ liệu và tự động mở tất cả khi có kết quả tìm kiếm
+  const filteredData = useMemo(() => {
+    if (!search.trim()) {
+      setExpandedIds([]); // Gom nhóm lại nếu không có tìm kiếm
+      return data;
+    }
+
+    const keyword = removeVietnameseTones(search);
+
+    const filterTree = (nodes: Item[]): Item[] => {
+      return nodes
+        .map((node) => {
+          const match = removeVietnameseTones(node.label).includes(keyword);
+          const filteredChildren = node.children.length
+            ? filterTree(node.children)
+            : [];
+          if (match || filteredChildren.length > 0) {
+            // Trả về node và tất cả con cháu của nó
+            return { ...node, children: node.children };
+          }
+          return null;
+        })
+        .filter((n): n is Item => n !== null);
+    };
+
+    const result = filterTree(data);
+    setExpandedIds(collectAllIds(result)); // Mở tất cả khi có kết quả
+    return result;
+  }, [search, data]);
+
+  const handleToggle = (id: string | number) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+    );
   };
 
   useEffect(() => {
@@ -133,7 +195,6 @@ export default function NestedDropdownScreen() {
           const menuAccount = response.data.data
             .filter((item: Item) => item.typeGroup === 0)
             .sort((a: Item, b: Item) => Number(a.stt) - Number(b.stt));
-
           const tree = buildTree(menuAccount);
           setData(tree);
         } else {
@@ -146,7 +207,6 @@ export default function NestedDropdownScreen() {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -161,11 +221,33 @@ export default function NestedDropdownScreen() {
   }
 
   return (
-    <FlatList
-      data={data}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => <DropdownItem item={item} />}
-      contentContainerStyle={{ padding: 12 }}
-    />
+    <View style={{ flex: 1 }}>
+      <TextInput
+        placeholder="Tìm kiếm..."
+        value={search}
+        onChangeText={setSearch}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          backgroundColor: "#fff",
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 12,
+          margin: 12,
+        }}
+      />
+      <FlatList
+        data={filteredData}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <DropdownItem
+            item={item}
+            expandedIds={expandedIds}
+            onToggle={handleToggle}
+          />
+        )}
+        contentContainerStyle={{ paddingVertical: 0, paddingHorizontal: 12 }}
+      />
+    </View>
   );
 }

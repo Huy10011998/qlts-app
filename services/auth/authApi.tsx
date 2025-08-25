@@ -1,7 +1,7 @@
 import axios from "axios";
-import { md5Hash } from "../utils/hash";
 import { API_ENDPOINTS } from "@/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { md5Hash } from "@/utils/helper";
 
 export const loginApi = async (userName: string, userPassword: string) => {
   try {

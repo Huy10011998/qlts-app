@@ -7,60 +7,71 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
+  Field,
   getFieldActive,
   getList,
   getPropertyClass,
 } from "@/services/data/callApi";
 
+// ======= HÀM LOẠI BỎ DẤU VÀ CHUYỂN CHỮ THƯỜNG =======
+const normalizeText = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
 interface PropertyClass {
   iconMobile: string;
-}
-
-interface Field {
-  name: string;
-  moTa: string; // label
-  isShowMobile: boolean;
 }
 
 export default function MayTinhList() {
   const [maytinh, setMayTinh] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
+  const [fieldShowMobile, setfieldShowMobile] = useState<Field[]>([]);
   const [propertyClass, setpropertyClass] = useState<PropertyClass>();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [skipSize, setSkipSize] = useState(0);
   const [total, setTotal] = useState(0);
+  const [searchText, setSearchText] = useState("");
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const nameClass = "MayTinh";
   const pageSize = 20;
 
+  // ======= GỌI API =======
   const fetchData = useCallback(
     async (isLoadMore = false) => {
-      if (isLoadMore) {
-        setIsLoadingMore(true);
-      } else {
-        setIsLoading(true);
-      }
+      if (isLoadMore) setIsLoadingMore(true);
+      else setIsLoading(true);
 
       try {
+        // Lấy thông tin field
         const responseFieldActive = await getFieldActive(nameClass);
-        const fieldActiveData =
-          responseFieldActive?.data?.filter((f: any) => f.isShowMobile) || [];
+        const fieldActiveData = responseFieldActive?.data;
         setFieldActive(fieldActiveData);
 
-        const responsePropetyClass = await getPropertyClass(nameClass);
-        const propertyClassData = responsePropetyClass?.data;
-        setpropertyClass(propertyClassData);
+        const fieldShowMobileData =
+          responseFieldActive?.data?.filter((f: any) => f.isShowMobile) || [];
+        setfieldShowMobile(fieldShowMobileData);
 
+        // Lấy thông tin class
+        const responsePropertyClass = await getPropertyClass(nameClass);
+        setpropertyClass(responsePropertyClass?.data);
+
+        // Lấy danh sách
         const currentSkip = isLoadMore ? skipSize : 0;
         const response = await getList(
           nameClass,
           "",
           pageSize,
           currentSkip,
+          searchText,
+          fieldActive,
           [],
           []
         );
@@ -86,16 +97,27 @@ export default function MayTinhList() {
         setIsLoadingMore(false);
       }
     },
-    [skipSize]
+    [fieldActive, searchText, skipSize]
   );
 
+  // ======= GỌI API LẦN ĐẦU =======
   useEffect(() => {
     fetchData();
+    setIsFirstLoad(false);
   }, []);
+
+  // ======= DEBOUNCE TÌM KIẾM =======
+  useEffect(() => {
+    if (isFirstLoad) return; // Bỏ qua lần đầu tiên
+    const timeout = setTimeout(() => {
+      fetchData(false);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [searchText]);
 
   const formatKey = (key: string) => key.charAt(0).toLowerCase() + key.slice(1);
 
-  // Component hiển thị card động
+  // ======= CARD HIỂN THỊ ITEM =======
   const Card = ({ item }: { item: Record<string, any> }) => (
     <View style={styles.card}>
       <View style={styles.avatar}>
@@ -109,12 +131,17 @@ export default function MayTinhList() {
         />
       </View>
       <View style={styles.info}>
-        {fieldActive.map((field) => (
-          <Text key={field.name} style={styles.text}>
-            <Text style={styles.label}>{field.moTa}: </Text>
-            {item[formatKey(field.name)] ?? "--"}
-          </Text>
-        ))}
+        {fieldShowMobile.map((field) => {
+          const key =
+            field.typeProperty === 6 ? `${field.name}_MoTa` : field.name;
+
+          return (
+            <Text key={field.name} style={styles.text}>
+              <Text style={styles.label}>{field.moTa}: </Text>
+              {item[formatKey(key)] ?? "--"}
+            </Text>
+          );
+        })}
       </View>
     </View>
   );
@@ -130,27 +157,35 @@ export default function MayTinhList() {
       {isLoading ? (
         <ActivityIndicator size="large" color="#FF3333" style={styles.loader} />
       ) : (
-        <FlatList
-          data={maytinh}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={({ item }) => <Card item={item} />}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isLoadingMore ? (
-              <ActivityIndicator size="small" color="#FF3333" />
-            ) : null
-          }
-          ListHeaderComponent={
-            <View style={styles.stickyHeader}>
-              <Text style={styles.header}>
-                Tổng số tài sản: {total} (Đã tải: {maytinh.length})
-              </Text>
-            </View>
-          }
-          stickyHeaderIndices={[0]}
-        />
+        <View>
+          <TextInput
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChangeText={(text) => setSearchText(normalizeText(text))}
+            style={styles.searchBox}
+          />
+          <FlatList
+            data={maytinh}
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={({ item }) => <Card item={item} />}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <ActivityIndicator size="small" color="#FF3333" />
+              ) : null
+            }
+            ListHeaderComponent={
+              <View style={styles.stickyHeader}>
+                <Text style={styles.header}>
+                  Tổng số tài sản: {total} (Đã tải: {maytinh.length})
+                </Text>
+              </View>
+            }
+            stickyHeaderIndices={[0]}
+          />
+        </View>
       )}
       <TouchableOpacity
         style={styles.fab}
@@ -199,7 +234,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   info: { flex: 1 },
-  text: { fontSize: 14, color: "#4B5563", marginBottom: 2 },
+  text: { fontSize: 14, color: "#000", marginBottom: 2 },
   label: { fontWeight: "600", color: "#374151" },
   fab: {
     position: "absolute",
@@ -216,5 +251,14 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 6,
+  },
+  searchBox: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    margin: 12,
+    backgroundColor: "#fff",
   },
 });

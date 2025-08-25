@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "@/config";
-import api from "@/services/api";
+import api from "@/services/data/api";
 import React, { useState, useEffect } from "react";
 import {
   View,

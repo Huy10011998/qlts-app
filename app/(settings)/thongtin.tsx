@@ -17,8 +17,8 @@ import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { API_ENDPOINTS } from "@/config";
-import api from "@/services/api";
-import { changePasswordApi } from "@/services/authApi";
+import api from "@/services/data/api";
+import { changePasswordApi } from "@/services";
 
 interface UserInfo {
   userName?: string;
