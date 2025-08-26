@@ -1,6 +1,6 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL } from "@/config/api";
+import { BASE_URL } from "@/config";
 
 type Conditions = {
   property: string;
@@ -136,6 +136,32 @@ export const getPropertyClass = async (nameClass: string) => {
     return response.data;
   } catch (error) {
     if (__DEV__) console.error("GetList May Tinh API error:", error);
+    throw error;
+  }
+};
+
+export const getDetails = async (nameCLass: string, id: number) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+    }
+
+    const config = {
+      method: "POST" as const,
+      url: `${BASE_URL}/${nameCLass}/get-single`,
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        id,
+      },
+    };
+    const response = await axios(config);
+    return response.data;
+  } catch (error) {
+    if (__DEV__) console.error(`Get Details ${nameCLass} API error:`, error);
     throw error;
   }
 };

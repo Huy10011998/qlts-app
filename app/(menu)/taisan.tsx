@@ -16,6 +16,7 @@ import api from "@/services/data/api";
 import { API_ENDPOINTS } from "@/config";
 import { useRouter } from "expo-router";
 import { removeVietnameseTones } from "@/utils/helper";
+import { useSearch } from "@/context/SearchContext";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -118,6 +119,8 @@ export default function TaiSanScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedIds, setExpandedIds] = useState<(string | number)[]>([]);
+
+  const { isSearchOpen } = useSearch();
 
   // Xây dựng cây từ danh sách phẳng
   const buildTree = (items: Item[]) => {
@@ -222,20 +225,23 @@ export default function TaiSanScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <TextInput
-        placeholder="Tìm kiếm..."
-        value={search}
-        onChangeText={setSearch}
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          backgroundColor: "#fff",
-          borderRadius: 8,
-          paddingHorizontal: 12,
-          paddingVertical: 12,
-          margin: 12,
-        }}
-      />
+      {isSearchOpen && (
+        <TextInput
+          placeholder="Tìm kiếm..."
+          value={search}
+          onChangeText={setSearch}
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            backgroundColor: "#fff",
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            margin: 12,
+          }}
+        />
+      )}
+
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id.toString()}
@@ -246,7 +252,10 @@ export default function TaiSanScreen() {
             onToggle={handleToggle}
           />
         )}
-        contentContainerStyle={{ paddingVertical: 0, paddingHorizontal: 12 }}
+        contentContainerStyle={{
+          paddingVertical: isSearchOpen ? 0 : 12,
+          paddingHorizontal: 12,
+        }}
       />
     </View>
   );

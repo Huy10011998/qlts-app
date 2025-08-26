@@ -224,17 +224,9 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={[styles.btnContai, isLoginDisabled && styles.disabledBtn]}
               onPress={handlePressLogin}
-              disabled={isLoginDisabled || isLoading}
+              disabled={isLoginDisabled}
             >
-              {isLoading ? (
-                <ActivityIndicator
-                  size="large"
-                  color="#FF3333"
-                  style={{ justifyContent: "center", flex: 1 }}
-                />
-              ) : (
-                <ThemedText type="default">Đăng nhập</ThemedText>
-              )}
+              <ThemedText type="default">Đăng nhập</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconFaceID}

@@ -12,27 +12,25 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import {
   Field,
+  getDetails,
   getFieldActive,
   getList,
   getPropertyClass,
 } from "@/services/data/callApi";
-
-// ======= HÀM LOẠI BỎ DẤU VÀ CHUYỂN CHỮ THƯỜNG =======
-const normalizeText = (text: string) =>
-  text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+import { getFieldValue, normalizeText } from "@/utils/helper";
+import { useSearch } from "@/context/SearchContext";
+import { useRouter } from "expo-router";
 
 interface PropertyClass {
   iconMobile: string;
 }
 
-export default function MayTinhList() {
+export default function MayTinh() {
   const [maytinh, setMayTinh] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
-  const [fieldShowMobile, setfieldShowMobile] = useState<Field[]>([]);
-  const [propertyClass, setpropertyClass] = useState<PropertyClass>();
+  const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
+  const [, setDetails] = useState();
+  const [propertyClass, setPropertyClass] = useState<PropertyClass>();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [skipSize, setSkipSize] = useState(0);
@@ -43,28 +41,52 @@ export default function MayTinhList() {
   const nameClass = "MayTinh";
   const pageSize = 20;
 
-  // ======= GỌI API =======
+  const { isSearchOpen } = useSearch();
+  const router = useRouter();
+
+  // ======= HANDLE PRESS ITEM =======
+  const handlePress = async (item: Record<string, any>) => {
+    try {
+      const responseDetails = await getDetails(nameClass, item.id);
+      setDetails(responseDetails);
+
+      router.push({
+        pathname: "/maytinh/[id]",
+        params: {
+          id: item.id,
+          item: JSON.stringify(responseDetails),
+          field: JSON.stringify(fieldActive),
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Lỗi", "Không thể tải chi tiết tài sản.");
+    }
+  };
+
+  // ======= FETCH DATA =======
   const fetchData = useCallback(
     async (isLoadMore = false) => {
       if (isLoadMore) setIsLoadingMore(true);
       else setIsLoading(true);
 
       try {
-        // Lấy thông tin field
-        const responseFieldActive = await getFieldActive(nameClass);
-        const fieldActiveData = responseFieldActive?.data;
-        setFieldActive(fieldActiveData);
+        // Lấy Field nếu lần đầu
+        if (!isLoadMore && fieldActive.length === 0) {
+          const responseFieldActive = await getFieldActive(nameClass);
+          const activeFields = responseFieldActive?.data || [];
+          setFieldActive(activeFields);
+          setFieldShowMobile(activeFields.filter((f: any) => f.isShowMobile));
+        }
 
-        const fieldShowMobileData =
-          responseFieldActive?.data?.filter((f: any) => f.isShowMobile) || [];
-        setfieldShowMobile(fieldShowMobileData);
+        // Lấy PropertyClass nếu lần đầu
+        if (!isLoadMore && !propertyClass) {
+          const responsePropertyClass = await getPropertyClass(nameClass);
+          setPropertyClass(responsePropertyClass?.data);
+        }
 
-        // Lấy thông tin class
-        const responsePropertyClass = await getPropertyClass(nameClass);
-        setpropertyClass(responsePropertyClass?.data);
-
-        // Lấy danh sách
         const currentSkip = isLoadMore ? skipSize : 0;
+
         const response = await getList(
           nameClass,
           "",
@@ -97,29 +119,36 @@ export default function MayTinhList() {
         setIsLoadingMore(false);
       }
     },
-    [fieldActive, searchText, skipSize]
+    [fieldActive, searchText, skipSize, propertyClass]
   );
 
   // ======= GỌI API LẦN ĐẦU =======
   useEffect(() => {
     fetchData();
     setIsFirstLoad(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ======= DEBOUNCE TÌM KIẾM =======
   useEffect(() => {
-    if (isFirstLoad) return; // Bỏ qua lần đầu tiên
+    if (isFirstLoad) return;
     const timeout = setTimeout(() => {
       fetchData(false);
     }, 500);
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
-  const formatKey = (key: string) => key.charAt(0).toLowerCase() + key.slice(1);
+  // ======= LOAD MORE =======
+  const handleLoadMore = () => {
+    if (maytinh.length < total && !isLoadingMore) {
+      fetchData(true);
+    }
+  };
 
-  // ======= CARD HIỂN THỊ ITEM =======
+  // ======= CARD ITEM =======
   const Card = ({ item }: { item: Record<string, any> }) => (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => handlePress(item)}>
       <View style={styles.avatar}>
         <Ionicons
           name={
@@ -132,38 +161,33 @@ export default function MayTinhList() {
       </View>
       <View style={styles.info}>
         {fieldShowMobile.map((field) => {
-          const key =
-            field.typeProperty === 6 ? `${field.name}_MoTa` : field.name;
-
           return (
             <Text key={field.name} style={styles.text}>
               <Text style={styles.label}>{field.moTa}: </Text>
-              {item[formatKey(key)] ?? "--"}
+              {getFieldValue(item, field)}
             </Text>
           );
         })}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
-  const handleLoadMore = () => {
-    if (maytinh.length < total && !isLoadingMore) {
-      fetchData(true);
-    }
-  };
-
+  // ======= RENDER =======
   return (
     <View style={styles.container}>
       {isLoading ? (
         <ActivityIndicator size="large" color="#FF3333" style={styles.loader} />
       ) : (
         <View>
-          <TextInput
-            placeholder="Tìm kiếm..."
-            value={searchText}
-            onChangeText={(text) => setSearchText(normalizeText(text))}
-            style={styles.searchBox}
-          />
+          {isSearchOpen && (
+            <TextInput
+              placeholder="Tìm kiếm..."
+              value={searchText}
+              onChangeText={(text) => setSearchText(normalizeText(text))}
+              style={styles.searchBox}
+            />
+          )}
+
           <FlatList
             data={maytinh}
             keyExtractor={(_, index) => index.toString()}
@@ -235,7 +259,7 @@ const styles = StyleSheet.create({
   },
   info: { flex: 1 },
   text: { fontSize: 14, color: "#000", marginBottom: 2 },
-  label: { fontWeight: "600", color: "#374151" },
+  label: { fontWeight: "bold", color: "#000" },
   fab: {
     position: "absolute",
     bottom: 24,

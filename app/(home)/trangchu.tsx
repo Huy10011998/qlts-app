@@ -110,7 +110,10 @@ const HomeScreen: React.FC = () => {
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.container, { paddingTop: insets.top }]}
+      contentContainerStyle={[
+        styles.container,
+        { paddingTop: insets.top - 40 },
+      ]}
     >
       <View style={styles.gridWrapper}>
         {menuItems.map((item, index) => (
