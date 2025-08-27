@@ -1,6 +1,8 @@
 import { Field } from "@/services/data/callApi";
 import * as Crypto from "expo-crypto";
 import { TypeProperty } from "./enum";
+import api from "@/components/auth/AuthProvider";
+import Toast from "react-native-toast-message";
 
 export const removeVietnameseTones = (str: string): string => {
   return str
@@ -39,4 +41,29 @@ export const getFieldValue = (
       : field.name;
 
   return String(item[formatKeyProperty(key)] ?? "--");
+};
+
+export const callApi = async <T,>(
+  method: "GET" | "POST" | "PUT" | "DELETE",
+  url: string,
+  data?: any
+): Promise<T> => {
+  try {
+    const response = await api.request<T>({
+      method,
+      url,
+      data,
+    });
+    return response.data;
+  } catch (error: any) {
+    if (__DEV__) console.error(`[API ERROR] ${url}:`, error);
+
+    Toast.show({
+      type: "error",
+      text1: "API Error",
+      text2: error.response?.data?.message || "Có lỗi xảy ra!",
+    });
+
+    throw error;
+  }
 };

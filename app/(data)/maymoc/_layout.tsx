@@ -39,7 +39,7 @@ const defaultHeaderOptions: React.ComponentProps<
   headerLeft: () => <HeaderBackButton />,
 };
 
-export default function MayTinhLayout() {
+export default function MayMocLayout() {
   return (
     <HeaderProvider>
       <StackScreens />
@@ -56,7 +56,7 @@ function StackScreens() {
         name="index"
         options={{
           ...defaultHeaderOptions,
-          title: "Máy tính",
+          title: "Máy móc",
           headerRight: () => <HeaderRightButton />,
         }}
       />

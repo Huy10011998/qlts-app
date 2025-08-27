@@ -55,7 +55,7 @@ export default function ChiTietScreen() {
     }
   }, [params.field]);
 
-  const details = useMemo(() => {
+  const item = useMemo(() => {
     try {
       return params.item ? JSON.parse(params.item as string)?.data : null;
     } catch {
@@ -113,7 +113,7 @@ export default function ChiTietScreen() {
                       return (
                         <Text key={field.name} style={styles.text}>
                           <Text style={styles.label}>{field.moTa}: </Text>
-                          {getFieldValue(details, field)}
+                          {getFieldValue(item, field)}
                         </Text>
                       );
                     })}

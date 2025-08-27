@@ -15,10 +15,10 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../components/auth/AuthProvider";
+import api, { useAuth } from "../../components/auth/AuthProvider";
 import { API_ENDPOINTS } from "@/config";
-import api from "@/services/data/api";
 import { changePasswordApi } from "@/services";
+import { callApi } from "@/utils/helper";
 
 interface UserInfo {
   userName?: string;
@@ -82,9 +82,12 @@ const InfoScreen = () => {
     const fetchUserInfo = async () => {
       setIsLoading(true);
       try {
-        const response = await api.post(API_ENDPOINTS.GET_INFO, {});
-        const userData: UserInfo = response?.data?.data;
-        setUser(userData);
+        const response = await callApi<{ success: boolean; data: UserInfo }>(
+          "POST",
+          API_ENDPOINTS.GET_INFO,
+          {}
+        );
+        setUser(response.data);
       } catch (error) {
         if (__DEV__) console.error("API error:", error);
         Alert.alert("Lỗi", "Không thể tải thông tin người dùng.");

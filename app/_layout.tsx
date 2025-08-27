@@ -12,6 +12,7 @@ import "react-native-reanimated";
 import { AuthProvider } from "../components/auth/AuthProvider";
 import BottomBar from "../components/BottomBar";
 import HeaderOptions from "@/components/HeaderOptions";
+import Toast from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -63,6 +64,7 @@ function AppNavigator({ colorScheme }: { colorScheme: "light" | "dark" }) {
           </Stack>
         </View>
         <BottomBar visible={showBottomBar} />
+        <Toast />
       </View>
     </ThemeProvider>
   );

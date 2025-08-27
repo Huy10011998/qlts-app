@@ -1,38 +1,38 @@
-import axios from "axios";
 import { API_ENDPOINTS } from "@/config";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { md5Hash } from "@/utils/helper";
+import { callApi, md5Hash } from "@/utils/helper";
+import { getValidToken } from "@/components/auth/AuthProvider";
 
-export const loginApi = async (userName: string, userPassword: string) => {
-  try {
-    const hashedPassword = await md5Hash(userPassword);
+interface LoginResponse {
+  data: {
+    accessToken: string;
+    refreshToken?: string;
+  };
+}
+export const loginApi = async (
+  userName: string,
+  userPassword: string
+): Promise<LoginResponse> => {
+  const hashedPassword = await md5Hash(userPassword);
 
-    const config = {
-      method: "POST" as const,
-      url: API_ENDPOINTS.LOGIN,
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-      },
-      data: {
-        userName,
-        userPassword: hashedPassword,
-      },
-    };
+  const response = await callApi<LoginResponse>("POST", API_ENDPOINTS.LOGIN, {
+    userName,
+    userPassword: hashedPassword,
+  });
 
-    const response = await axios(config);
-    return response.data;
-  } catch (error) {
-    if (__DEV__) console.error("Login API error:", error);
-    throw error;
-  }
+  return response;
 };
+
+interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+}
 
 export const changePasswordApi = async (
   oldPassword: string,
   newPassword: string
-) => {
+): Promise<ChangePasswordResponse> => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = await getValidToken(); // nhớ await token
     if (!token) {
       throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
     }
@@ -40,22 +40,14 @@ export const changePasswordApi = async (
     const hashedPassword = await md5Hash(oldPassword);
     const hashedNewPassword = await md5Hash(newPassword);
 
-    const config = {
-      method: "POST" as const,
-      url: API_ENDPOINTS.CHANGE_PASSWORD,
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-        Authorization: `Bearer ${token}`,
-      },
-      data: {
-        oldPassword: hashedPassword,
-        newPassword: hashedNewPassword,
-      },
-    };
+    const response = await callApi("POST", API_ENDPOINTS.CHANGE_PASSWORD, {
+      oldPassword: hashedPassword,
+      newPassword: hashedNewPassword,
+    });
 
-    const response = await axios(config);
-    return response.data;
-  } catch (error) {
+    // giả sử callApi trả về object { success, message }
+    return response as ChangePasswordResponse;
+  } catch (error: any) {
     if (__DEV__) console.error("ChangePassword API error:", error);
     throw error;
   }

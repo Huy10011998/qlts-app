@@ -1,6 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL } from "@/config";
+import { getValidToken } from "@/components/auth/AuthProvider";
 
 type Conditions = {
   property: string;
@@ -58,7 +59,7 @@ export const getList = async (
   conditionsAll: Conditions[]
 ) => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = await getValidToken();
     if (!token) {
       throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
     }
@@ -90,7 +91,7 @@ export const getList = async (
 
 export const getFieldActive = async (iD_Class_MoTa: string) => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = await getValidToken();
     if (!token) {
       throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
     }
@@ -116,7 +117,8 @@ export const getFieldActive = async (iD_Class_MoTa: string) => {
 
 export const getPropertyClass = async (nameClass: string) => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = await getValidToken();
+
     if (!token) {
       throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
     }
@@ -149,7 +151,7 @@ export const getDetails = async (nameCLass: string, id: number) => {
 
     const config = {
       method: "POST" as const,
-      url: `${BASE_URL}/${nameCLass}/get-single`,
+      url: `${BASE_URL}/${nameCLass}/get-details`,
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
         Authorization: `Bearer ${token}`,

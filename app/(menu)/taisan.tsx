@@ -12,11 +12,11 @@ import {
   TextInput,
 } from "react-native";
 import { FolderOpen, Folder, Pin } from "lucide-react-native";
-import api from "@/services/data/api";
 import { API_ENDPOINTS } from "@/config";
 import { useRouter } from "expo-router";
-import { removeVietnameseTones } from "@/utils/helper";
+import { callApi, removeVietnameseTones } from "@/utils/helper";
 import { useSearch } from "@/context/SearchContext";
+import api from "@/components/auth/AuthProvider";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -193,11 +193,18 @@ export default function TaiSanScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.post(API_ENDPOINTS.GET_MENU_ACTIVE, {});
-        if (Array.isArray(response?.data?.data)) {
-          const menuAccount = response.data.data
+        const response = await callApi<any>(
+          "POST",
+          API_ENDPOINTS.GET_MENU_ACTIVE,
+          {}
+        );
+
+        // response là chính response.data trong callApi
+        if (Array.isArray(response?.data)) {
+          const menuAccount = response.data
             .filter((item: Item) => item.typeGroup === 0)
             .sort((a: Item, b: Item) => Number(a.stt) - Number(b.stt));
+
           const tree = buildTree(menuAccount);
           setData(tree);
         } else {
@@ -210,6 +217,7 @@ export default function TaiSanScreen() {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
 

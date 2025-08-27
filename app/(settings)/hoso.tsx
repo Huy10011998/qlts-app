@@ -1,5 +1,6 @@
+import api from "@/components/auth/AuthProvider";
 import { API_ENDPOINTS } from "@/config";
-import api from "@/services/data/api";
+import { callApi } from "@/utils/helper";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -31,17 +32,19 @@ const ProfileScreen: React.FC = () => {
     const fetchUserInfo = async () => {
       setIsLoading(true);
       try {
-        const response = await api.post(API_ENDPOINTS.GET_INFO, {});
-        const userData: User = response?.data?.data;
-        setUser(userData);
+        const response = await callApi<{ success: boolean; data: User }>(
+          "POST",
+          API_ENDPOINTS.GET_INFO,
+          {}
+        );
+        setUser(response.data);
       } catch (error) {
         if (__DEV__) console.error("API error:", error);
-        Alert.alert("Lỗi", "Không thể tải thông tin người dùng.");
+        Alert.alert("Lỗi", "Không thể tải hồ sơ cá nhân.");
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchUserInfo();
   }, []);
 

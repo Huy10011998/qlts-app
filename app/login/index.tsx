@@ -30,7 +30,7 @@ export default function LoginScreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoginDisabled, setIsLoginDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const { token, setToken } = useAuth();
+  const { token, setToken, setRefreshToken } = useAuth();
   const hasTriedFaceID = useRef(false);
 
   useEffect(() => {
@@ -44,42 +44,45 @@ export default function LoginScreen() {
   useFocusEffect(
     useCallback(() => {
       const tryAutoLoginWithFaceID = async () => {
-        if (hasTriedFaceID.current) return; // Chạy duy nhất 1 lần
+        if (hasTriedFaceID.current) return;
         hasTriedFaceID.current = true;
 
         const savedData = await SecureStore.getItemAsync("faceid_credentials");
-        if (savedData) {
-          const compatible = await LocalAuthentication.hasHardwareAsync();
-          const enrolled = await LocalAuthentication.isEnrolledAsync();
+        if (!savedData) return;
 
-          if (compatible && enrolled) {
-            const result = await LocalAuthentication.authenticateAsync({
-              promptMessage: "Xác thực để đăng nhập",
-              fallbackLabel: "Dùng mật khẩu",
-            });
+        const compatible = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+        if (!compatible || !enrolled) return;
 
-            if (result.success) {
-              const { userName, userPassword } = JSON.parse(savedData);
-              try {
-                const response = await loginApi(userName, userPassword);
+        setIsLoading(true);
+        try {
+          const result = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Xác thực để đăng nhập",
+            fallbackLabel: "Dùng mật khẩu",
+          });
 
-                if (response?.data?.accessToken) {
-                  setToken(response.data.accessToken);
-                  router.replace("/(home)/trangchu");
-                } else {
-                  Alert.alert("Lỗi", "Phản hồi không hợp lệ từ server.");
-                }
-              } catch (error) {
-                if (__DEV__) console.error("Login error:", error);
-                Alert.alert("Lỗi", "Không thể đăng nhập tự động.");
-              }
+          if (result.success) {
+            const { userName, userPassword } = JSON.parse(savedData);
+            const response = await loginApi(userName, userPassword);
+
+            if (response?.data?.accessToken) {
+              setToken(response.data.accessToken);
+              setRefreshToken(response.data.refreshToken ?? null);
+              router.replace("/(home)/trangchu");
+            } else {
+              Alert.alert("Lỗi", "Phản hồi không hợp lệ từ server.");
             }
           }
+        } catch (error) {
+          if (__DEV__) console.error("Login error:", error);
+          Alert.alert("Lỗi", "Không thể đăng nhập tự động.");
+        } finally {
+          setIsLoading(false);
         }
       };
 
       tryAutoLoginWithFaceID();
-    }, [setToken, router])
+    }, [setToken, setRefreshToken, router])
   );
 
   const handlePressLogin = async () => {
@@ -89,9 +92,9 @@ export default function LoginScreen() {
 
     try {
       const response = await loginApi(userName, userPassword);
-
       if (response?.data?.accessToken) {
         setToken(response.data.accessToken);
+        setRefreshToken(response.data.refreshToken ?? null);
 
         Alert.alert(
           "Lưu đăng nhập?",
@@ -151,21 +154,24 @@ export default function LoginScreen() {
       if (!result.success) return;
 
       const savedData = await SecureStore.getItemAsync("faceid_credentials");
-      if (!savedData) {
+      if (savedData === null) {
         Alert.alert("Không tìm thấy thông tin đăng nhập đã lưu.");
         return;
       }
 
-      const { userName, userPassword } = JSON.parse(savedData); // userPassword đã MD5
+      const { userName, userPassword } = JSON.parse(savedData);
       if (!userName || !userPassword) {
         Alert.alert("Thông tin đăng nhập không hợp lệ.");
         return;
       }
+
       try {
         const response = await loginApi(userName, userPassword);
 
         if (response?.data?.accessToken) {
           setToken(response.data.accessToken);
+          setRefreshToken(response.data.refreshToken ?? null);
+
           router.replace("/(home)/trangchu");
         } else {
           Alert.alert("Đăng nhập thất bại", "Phản hồi không hợp lệ từ server.");

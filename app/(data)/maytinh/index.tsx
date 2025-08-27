@@ -47,6 +47,9 @@ export default function MayTinh() {
   // ======= HANDLE PRESS ITEM =======
   const handlePress = async (item: Record<string, any>) => {
     try {
+      // Hiển thị loading
+      setIsLoading(true);
+
       const responseDetails = await getDetails(nameClass, item.id);
       setDetails(responseDetails);
 
@@ -60,7 +63,9 @@ export default function MayTinh() {
       });
     } catch (error) {
       console.error(error);
-      Alert.alert("Lỗi", "Không thể tải chi tiết tài sản.");
+      Alert.alert("Lỗi", "Không thể tải chi tiết máy tính");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,7 +102,7 @@ export default function MayTinh() {
           [],
           []
         );
-
+        console.log("===list", response);
         const newItems = response?.data?.items || [];
         const totalItems = response?.data?.totalCount || 0;
 
@@ -176,7 +181,11 @@ export default function MayTinh() {
   return (
     <View style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator size="large" color="#FF3333" style={styles.loader} />
+        <ActivityIndicator
+          size="large"
+          color="#FF3333"
+          style={{ justifyContent: "center", flex: 1 }}
+        />
       ) : (
         <View>
           {isSearchOpen && (
@@ -223,7 +232,6 @@ export default function MayTinh() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F3F4F6" },
-  loader: { flex: 1, justifyContent: "center" },
   header: {
     textAlign: "center",
     fontSize: 14,
