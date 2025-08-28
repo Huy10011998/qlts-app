@@ -16,7 +16,6 @@ import { API_ENDPOINTS } from "@/config";
 import { useRouter } from "expo-router";
 import { callApi, removeVietnameseTones } from "@/utils/helper";
 import { useSearch } from "@/context/SearchContext";
-import api from "@/components/auth/AuthProvider";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -38,6 +37,12 @@ interface Item {
   children: Item[];
   contentName_Mobile: string | null;
   stt: string | number;
+}
+
+interface GetMenuActiveResponse {
+  data: Item[];
+  success?: boolean;
+  message?: string;
 }
 
 type Props = {
@@ -193,11 +198,11 @@ export default function TaiSanScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await callApi<any>(
+        const response = (await callApi(
           "POST",
           API_ENDPOINTS.GET_MENU_ACTIVE,
           {}
-        );
+        )) as GetMenuActiveResponse;
 
         // response là chính response.data trong callApi
         if (Array.isArray(response?.data)) {
