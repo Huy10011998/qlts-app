@@ -1,11 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
-  Text,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   Alert,
   TextInput,
 } from "react-native";
@@ -17,15 +14,16 @@ import {
   getList,
   getPropertyClass,
 } from "@/services/data/callApi";
-import { getFieldValue, normalizeText } from "@/utils/helper";
 import { useSearch } from "@/context/SearchContext";
 import { useRouter } from "expo-router";
-
+import IsLoading from "@/components/ui/IconLoading";
+import { ListContainer, SearchBar } from "@/app/(dataClass)/list";
+import { normalizeText } from "@/utils/helper";
 interface PropertyClass {
   iconMobile: string;
 }
 
-export default function MayTinh() {
+export default function MayTinhScreen() {
   const [maytinh, setMayTinh] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
   const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
@@ -44,7 +42,15 @@ export default function MayTinh() {
   const { isSearchOpen } = useSearch();
   const router = useRouter();
 
-  // ======= HANDLE PRESS ITEM =======
+  const searchInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
+  //  HANDLE PRESS ITEM
   const handlePress = async (item: Record<string, any>) => {
     try {
       // Hiển thị loading
@@ -54,7 +60,7 @@ export default function MayTinh() {
       setDetails(responseDetails);
 
       router.push({
-        pathname: "/maytinh/[id]",
+        pathname: "/maytinh/details",
         params: {
           id: item.id,
           item: JSON.stringify(responseDetails),
@@ -69,7 +75,7 @@ export default function MayTinh() {
     }
   };
 
-  // ======= FETCH DATA =======
+  //  FETCH DATA
   const fetchData = useCallback(
     async (isLoadMore = false) => {
       if (isLoadMore) setIsLoadingMore(true);
@@ -102,7 +108,6 @@ export default function MayTinh() {
           [],
           []
         );
-        console.log("===list", response);
         const newItems = response?.data?.items || [];
         const totalItems = response?.data?.totalCount || 0;
 
@@ -127,14 +132,14 @@ export default function MayTinh() {
     [fieldActive, searchText, skipSize, propertyClass]
   );
 
-  // ======= GỌI API LẦN ĐẦU =======
+  //  GỌI API LẦN ĐẦU
   useEffect(() => {
     fetchData();
     setIsFirstLoad(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ======= DEBOUNCE TÌM KIẾM =======
+  // DEBOUNCE TÌM KIẾM
   useEffect(() => {
     if (isFirstLoad) return;
     const timeout = setTimeout(() => {
@@ -144,79 +149,36 @@ export default function MayTinh() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
-  // ======= LOAD MORE =======
+  // LOAD MORE
   const handleLoadMore = () => {
     if (maytinh.length < total && !isLoadingMore) {
       fetchData(true);
     }
   };
 
-  // ======= CARD ITEM =======
-  const Card = ({ item }: { item: Record<string, any> }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handlePress(item)}>
-      <View style={styles.avatar}>
-        <Ionicons
-          name={
-            (propertyClass?.iconMobile as keyof typeof Ionicons.glyphMap) ||
-            "document-text-outline"
-          }
-          size={24}
-          color="#0077CC"
-        />
-      </View>
-      <View style={styles.info}>
-        {fieldShowMobile.map((field) => {
-          return (
-            <Text key={field.name} style={styles.text}>
-              <Text style={styles.label}>{field.moTa}: </Text>
-              {getFieldValue(item, field)}
-            </Text>
-          );
-        })}
-      </View>
-    </TouchableOpacity>
-  );
-
-  // ======= RENDER =======
+  // RENDER
   return (
     <View style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator
-          size="large"
-          color="#FF3333"
-          style={{ justifyContent: "center", flex: 1 }}
-        />
+        <IsLoading />
       ) : (
         <View>
           {isSearchOpen && (
-            <TextInput
-              placeholder="Tìm kiếm..."
+            <SearchBar
+              visible={true}
               value={searchText}
-              onChangeText={(text) => setSearchText(normalizeText(text))}
-              style={styles.searchBox}
+              onChange={(text) => setSearchText(normalizeText(text))}
             />
           )}
-
-          <FlatList
+          <ListContainer
             data={maytinh}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => <Card item={item} />}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              isLoadingMore ? (
-                <ActivityIndicator size="small" color="#FF3333" />
-              ) : null
-            }
-            ListHeaderComponent={
-              <View style={styles.stickyHeader}>
-                <Text style={styles.header}>
-                  Tổng số tài sản: {total} (Đã tải: {maytinh.length})
-                </Text>
-              </View>
-            }
-            stickyHeaderIndices={[0]}
+            fields={fieldShowMobile}
+            total={total}
+            isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
+            icon={propertyClass?.iconMobile || ""}
+            onLoadMore={handleLoadMore}
+            onItemPress={(item) => handlePress(item)}
           />
         </View>
       )}
@@ -232,42 +194,6 @@ export default function MayTinh() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F3F4F6" },
-  header: {
-    textAlign: "center",
-    fontSize: 14,
-    color: "#333",
-    fontWeight: "600",
-  },
-  stickyHeader: {
-    backgroundColor: "#F3F4F6",
-    paddingVertical: 10,
-    zIndex: 10,
-  },
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    marginHorizontal: 12,
-    marginVertical: 6,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#E0F2FE",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  info: { flex: 1 },
-  text: { fontSize: 14, color: "#000", marginBottom: 2 },
-  label: { fontWeight: "bold", color: "#000" },
   fab: {
     position: "absolute",
     bottom: 24,
@@ -283,14 +209,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 6,
-  },
-  searchBox: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    margin: 12,
-    backgroundColor: "#fff",
   },
 });

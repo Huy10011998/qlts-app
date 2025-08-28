@@ -1,5 +1,10 @@
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useSearch } from "@/context/SearchContext";
+import { NavigationProp } from "@react-navigation/native";
+import { Stack, useNavigation } from "expo-router";
 
 interface CustomHeaderProps {
   visible?: boolean; // Prop để ẩn/hiện header
@@ -32,6 +37,39 @@ export default function CustomHeader({ visible = true }: CustomHeaderProps) {
     </View>
   );
 }
+
+// Nút tìm kiếm bên phải
+export function HeaderRightButton() {
+  const { toggleSearch } = useSearch();
+  return (
+    <TouchableOpacity onPress={toggleSearch} style={{ paddingHorizontal: 10 }}>
+      <Ionicons name="search" size={24} color="#fff" />
+    </TouchableOpacity>
+  );
+}
+
+// Nút quay lại bên trái
+export function HeaderBackButton() {
+  const navigation =
+    useNavigation<NavigationProp<ReactNavigation.RootParamList>>();
+  return (
+    <TouchableOpacity
+      onPress={() => navigation.canGoBack() && navigation.goBack()}
+      style={{ paddingHorizontal: 10 }}
+    >
+      <Ionicons name="arrow-back" size={24} color="#fff" />
+    </TouchableOpacity>
+  );
+}
+// Cấu hình mặc định cho header
+export const defaultHeaderOptions: React.ComponentProps<
+  typeof Stack.Screen
+>["options"] = {
+  headerStyle: { backgroundColor: "#FF3333" },
+  headerTintColor: "#fff",
+  headerTitleStyle: { fontWeight: "bold" },
+  headerLeft: () => <HeaderBackButton />,
+};
 
 const styles = StyleSheet.create({
   headerContainer: {

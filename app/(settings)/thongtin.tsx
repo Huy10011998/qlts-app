@@ -9,16 +9,16 @@ import {
   Image,
   Modal,
   TextInput,
-  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
-import api, { useAuth } from "../../components/auth/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { API_ENDPOINTS } from "@/config";
 import { changePasswordApi } from "@/services";
 import { callApi } from "@/utils/helper";
+import IsLoading from "@/components/ui/IconLoading";
 
 interface UserInfo {
   userName?: string;
@@ -200,13 +200,7 @@ const InfoScreen = () => {
       </ScrollView>
 
       {/* Loading overlay */}
-      {isLoading && (
-        <ActivityIndicator
-          size="large"
-          color="#FF3333"
-          style={{ justifyContent: "center", flex: 1 }}
-        />
-      )}
+      {isLoading && <IsLoading />}
 
       {/* Modal đổi mật khẩu */}
       <Modal

@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   View,
   Text,
-  ActivityIndicator,
   Pressable,
   FlatList,
   Alert,
@@ -16,6 +15,7 @@ import { API_ENDPOINTS } from "@/config";
 import { useRouter } from "expo-router";
 import { callApi, removeVietnameseTones } from "@/utils/helper";
 import { useSearch } from "@/context/SearchContext";
+import IsLoading from "@/components/ui/IconLoading";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -29,10 +29,6 @@ interface Item {
   id: string | number;
   label: string;
   parent: string | number | null;
-  parent_MoTa: string | null;
-  typeGroup_MoTa: string;
-  showCloseToogle: boolean;
-  contentName: string | null;
   typeGroup: number;
   children: Item[];
   contentName_Mobile: string | null;
@@ -45,16 +41,14 @@ interface GetMenuActiveResponse {
   message?: string;
 }
 
-type Props = {
+type DropdownProps = {
   item: Item;
   level?: number;
   expandedIds: (string | number)[];
   onToggle: (id: string | number) => void;
 };
 
-// Xử lý chuỗi không dấu + thường
-
-const DropdownItem: React.FC<Props> = ({
+const DropdownItem: React.FC<DropdownProps> = ({
   item,
   level = 0,
   expandedIds,
@@ -80,23 +74,24 @@ const DropdownItem: React.FC<Props> = ({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          padding: 12,
+          padding: 14,
           borderRadius: 8,
           borderWidth: 1,
+          borderColor: "#eee",
           shadowColor: "#000",
+          backgroundColor: "#fff",
           shadowOpacity: 0.05,
           shadowRadius: 4,
           elevation: 1,
         }}
       >
-        {item.contentName ? (
+        {item.contentName_Mobile ? (
           <Pin size={18} color="red" />
         ) : expanded ? (
           <FolderOpen size={18} color="red" />
         ) : (
           <Folder size={18} color="red" />
         )}
-
         <Text style={{ marginLeft: 6, fontSize: 13, fontWeight: "bold" }}>
           {item.label}
         </Text>
@@ -124,8 +119,14 @@ export default function TaiSanScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedIds, setExpandedIds] = useState<(string | number)[]>([]);
-
   const { isSearchOpen } = useSearch();
+  const searchInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
 
   // Xây dựng cây từ danh sách phẳng
   const buildTree = (items: Item[]) => {
@@ -144,29 +145,14 @@ export default function TaiSanScreen() {
     return roots;
   };
 
-  // Lấy tất cả ID của node và children
-  const collectAllIds = (items: Item[]): (string | number)[] => {
-    const ids: (string | number)[] = [];
-    const traverse = (nodes: Item[]) => {
-      for (const node of nodes) {
-        ids.push(node.id);
-        if (node.children.length > 0) {
-          traverse(node.children);
-        }
-      }
-    };
-    traverse(items);
-    return ids;
-  };
-
-  // Lọc dữ liệu và tự động mở tất cả khi có kết quả tìm kiếm
   const filteredData = useMemo(() => {
     if (!search.trim()) {
-      setExpandedIds([]); // Gom nhóm lại nếu không có tìm kiếm
+      setExpandedIds([]);
       return data;
     }
 
     const keyword = removeVietnameseTones(search);
+    const expandedSet = new Set<string | number>();
 
     const filterTree = (nodes: Item[]): Item[] => {
       return nodes
@@ -176,8 +162,8 @@ export default function TaiSanScreen() {
             ? filterTree(node.children)
             : [];
           if (match || filteredChildren.length > 0) {
-            // Trả về node và tất cả con cháu của nó
-            return { ...node, children: node.children };
+            if (filteredChildren.length > 0) expandedSet.add(node.id);
+            return { ...node, children: filteredChildren };
           }
           return null;
         })
@@ -185,7 +171,7 @@ export default function TaiSanScreen() {
     };
 
     const result = filterTree(data);
-    setExpandedIds(collectAllIds(result)); // Mở tất cả khi có kết quả
+    setExpandedIds(Array.from(expandedSet));
     return result;
   }, [search, data]);
 
@@ -204,14 +190,11 @@ export default function TaiSanScreen() {
           {}
         )) as GetMenuActiveResponse;
 
-        // response là chính response.data trong callApi
         if (Array.isArray(response?.data)) {
           const menuAccount = response.data
-            .filter((item: Item) => item.typeGroup === 0)
-            .sort((a: Item, b: Item) => Number(a.stt) - Number(b.stt));
-
-          const tree = buildTree(menuAccount);
-          setData(tree);
+            .filter((item) => item.typeGroup === 0)
+            .sort((a, b) => Number(a.stt) - Number(b.stt));
+          setData(buildTree(menuAccount));
         } else {
           throw new Error("Dữ liệu trả về không hợp lệ.");
         }
@@ -227,19 +210,14 @@ export default function TaiSanScreen() {
   }, []);
 
   if (isLoading) {
-    return (
-      <ActivityIndicator
-        size="large"
-        color="#FF3333"
-        style={{ justifyContent: "center", flex: 1 }}
-      />
-    );
+    return <IsLoading />;
   }
 
   return (
     <View style={{ flex: 1 }}>
       {isSearchOpen && (
         <TextInput
+          ref={searchInputRef}
           placeholder="Tìm kiếm..."
           value={search}
           onChangeText={setSearch}

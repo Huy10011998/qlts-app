@@ -2,6 +2,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedView } from "@/components/ThemedView";
+import IsLoading from "@/components/ui/IconLoading";
 import { loginApi } from "@/services";
 import { useFocusEffect } from "@react-navigation/native";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -9,7 +10,6 @@ import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -240,11 +240,7 @@ export default function LoginScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator
-                  size="large"
-                  color="#FF3333"
-                  style={{ justifyContent: "center", flex: 1 }}
-                />
+                <IsLoading />
               ) : (
                 <Image
                   source={require("../../assets/images/faceid-icon2.png")}

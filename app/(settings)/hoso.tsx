@@ -1,16 +1,9 @@
 import api from "@/components/auth/AuthProvider";
+import IsLoading from "@/components/ui/IconLoading";
 import { API_ENDPOINTS } from "@/config";
 import { callApi } from "@/utils/helper";
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, Alert } from "react-native";
 
 interface User {
   moTa?: string;
@@ -56,13 +49,7 @@ const ProfileScreen: React.FC = () => {
   );
 
   if (isLoading || !user) {
-    return (
-      <ActivityIndicator
-        size="large"
-        color="#FF3333"
-        style={{ justifyContent: "center", flex: 1 }}
-      />
-    );
+    return <IsLoading />;
   }
 
   return (
