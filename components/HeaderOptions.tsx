@@ -6,14 +6,7 @@ import { useSearch } from "@/context/SearchContext";
 import { NavigationProp } from "@react-navigation/native";
 import { Stack, useNavigation } from "expo-router";
 
-interface CustomHeaderProps {
-  visible?: boolean; // Prop để ẩn/hiện header
-}
-
-export default function CustomHeader({ visible = true }: CustomHeaderProps) {
-  // Nếu visible = false thì không render header
-  if (!visible) return null;
-
+export default function CustomHeader() {
   return (
     <View style={styles.headerContainer}>
       <Image

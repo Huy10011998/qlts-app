@@ -19,6 +19,7 @@ import { API_ENDPOINTS } from "@/config";
 import { changePasswordApi } from "@/services";
 import { callApi } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
+import { ScreenWithBottomBar } from "@/components/ContainerBottomBar";
 
 interface UserInfo {
   userName?: string;
@@ -189,71 +190,76 @@ const InfoScreen = () => {
   ];
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
-        <ProfileHeader name={user?.moTa ?? "---"} avatarUrl={user?.avatarUrl} />
-        <View style={styles.section}>
-          {settings.map((item, index) => (
-            <SettingItem key={index} {...item} />
-          ))}
-        </View>
-      </ScrollView>
+    <ScreenWithBottomBar>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={styles.container}>
+          <ProfileHeader
+            name={user?.moTa ?? "---"}
+            avatarUrl={user?.avatarUrl}
+          />
+          <View style={styles.section}>
+            {settings.map((item, index) => (
+              <SettingItem key={index} {...item} />
+            ))}
+          </View>
+        </ScrollView>
 
-      {/* Loading overlay */}
-      {isLoading && <IsLoading />}
+        {/* Loading overlay */}
+        {isLoading && <IsLoading />}
 
-      {/* Modal đổi mật khẩu */}
-      <Modal
-        transparent
-        animationType="fade"
-        visible={isModalVisible}
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
+        {/* Modal đổi mật khẩu */}
+        <Modal
+          transparent
+          animationType="fade"
+          visible={isModalVisible}
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Mật khẩu cũ"
-              secureTextEntry
-              value={oldPassword}
-              onChangeText={setOldPassword}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Mật khẩu mới"
-              secureTextEntry
-              value={newPassword}
-              onChangeText={setNewPassword}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Xác nhận mật khẩu mới"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
+              <TextInput
+                style={styles.input}
+                placeholder="Mật khẩu cũ"
+                secureTextEntry
+                value={oldPassword}
+                onChangeText={setOldPassword}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Mật khẩu mới"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Xác nhận mật khẩu mới"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Hủy</Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => setIsModalVisible(false)}
+                >
+                  <Text style={styles.buttonText}>Hủy</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, styles.confirmButton]}
-                onPress={handleChangePassword}
-              >
-                <Text style={styles.buttonText}>Xác nhận</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.confirmButton]}
+                  onPress={handleChangePassword}
+                >
+                  <Text style={styles.buttonText}>Xác nhận</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </ScreenWithBottomBar>
   );
 };
 
@@ -304,14 +310,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 999,
-  },
-  loadingBox: {
-    backgroundColor: "#fff",
-    paddingVertical: 20,
-    paddingHorizontal: 30,
-    borderRadius: 12,
-    alignItems: "center",
-    elevation: 5,
   },
   modalOverlay: {
     flex: 1,

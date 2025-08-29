@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { ScreenWithBottomBar } from "@/components/ContainerBottomBar";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth / 3;
@@ -109,18 +110,20 @@ const HomeScreen: React.FC = () => {
   ];
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { paddingTop: insets.top - 40 },
-      ]}
-    >
-      <View style={styles.gridWrapper}>
-        {menuItems.map((item, index) => (
-          <MenuItemCard key={index} {...item} index={index} />
-        ))}
-      </View>
-    </ScrollView>
+    <ScreenWithBottomBar>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { paddingTop: insets.top - 40 },
+        ]}
+      >
+        <View style={styles.gridWrapper}>
+          {menuItems.map((item, index) => (
+            <MenuItemCard key={index} {...item} index={index} />
+          ))}
+        </View>
+      </ScrollView>
+    </ScreenWithBottomBar>
   );
 };
 

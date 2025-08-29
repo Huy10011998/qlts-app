@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,31 +8,16 @@ import {
   ScrollView,
   Animated,
   Dimensions,
+  Alert,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Field } from "@/services/data/callApi";
+import { Field, getDetails } from "@/services/data/callApi";
 import { getFieldValue } from "@/utils/helper";
-
-interface GroupListProps {
-  groupedFields: Record<string, Field[]>;
-  collapsedGroups: Record<string, boolean>;
-  toggleGroup: (groupName: string) => void;
-  getFieldValue: (item: any, field: Field) => string;
-  item: any;
-}
-
-interface BottomBarProps {
-  activeTab: string;
-  onTabPress: (tabKey: string, label: string) => void;
-}
-
-interface DetailsProps {
-  activeTab: string;
-  groupedFields: Record<string, Field[]>;
-  collapsedGroups: Record<string, boolean>;
-  toggleGroup: (groupName: string) => void;
-  item: any;
-}
+import { useLocalSearchParams } from "expo-router";
+import { useHeader } from "@/context/HeaderContext";
+import IsLoading from "@/components/ui/IconLoading";
+import RenderHtml from "react-native-render-html";
 
 const TAB_ITEMS = [
   { key: "list", label: "Thông tin", icon: "document-text-outline" },
@@ -46,49 +31,56 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const TAB_WIDTH = SCREEN_WIDTH / TAB_ITEMS.length;
 const UNDERLINE_WIDTH = TAB_WIDTH * 0.6;
 
-export const GroupList: React.FC<GroupListProps> = ({
+const GroupList = ({
   groupedFields,
   collapsedGroups,
   toggleGroup,
   getFieldValue,
   item,
-}) => {
-  return (
-    <>
-      {Object.entries(groupedFields).map(([groupName, fields]) => {
-        const isCollapsed = collapsedGroups[groupName];
-        return (
-          <View key={groupName} style={styles.groupCard}>
-            <TouchableOpacity
-              style={styles.groupHeader}
-              onPress={() => toggleGroup(groupName)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.groupTitle}>{groupName}</Text>
-              <Ionicons
-                name={isCollapsed ? "chevron-down" : "chevron-up"}
-                size={22}
-                color="#222"
-              />
-            </TouchableOpacity>
+}: {
+  groupedFields: Record<string, Field[]>;
+  collapsedGroups: Record<string, boolean>;
+  toggleGroup: (groupName: string) => void;
+  getFieldValue: (item: any, field: Field) => string;
+  item: any;
+}) => (
+  <>
+    {Object.entries(groupedFields).map(([groupName, fields]) => {
+      const isCollapsed = collapsedGroups[groupName];
+      return (
+        <View key={groupName} style={styles.groupCard}>
+          <TouchableOpacity
+            style={styles.groupHeader}
+            onPress={() => toggleGroup(groupName)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.groupTitle}>{groupName}</Text>
+            <Ionicons
+              name={isCollapsed ? "chevron-down" : "chevron-up"}
+              size={22}
+              color="#222"
+            />
+          </TouchableOpacity>
 
-            {!isCollapsed &&
-              fields.map((field) => (
-                <Text key={field.name} style={styles.text}>
-                  <Text style={styles.label}>{field.moTa}: </Text>
-                  {getFieldValue(item, field)}
-                </Text>
-              ))}
-          </View>
-        );
-      })}
-    </>
-  );
-};
+          {!isCollapsed &&
+            fields.map((field) => (
+              <Text key={field.name} style={styles.text}>
+                <Text style={styles.label}>{field.moTa}: </Text>
+                {getFieldValue(item, field) || "---"}
+              </Text>
+            ))}
+        </View>
+      );
+    })}
+  </>
+);
 
-export const BottomBar: React.FC<BottomBarProps> = ({
+const BottomBar = ({
   activeTab,
   onTabPress,
+}: {
+  activeTab: string;
+  onTabPress: (tabKey: string, label: string) => void;
 }) => {
   const startX = (TAB_WIDTH - UNDERLINE_WIDTH) / 2;
   const underlineX = useRef(new Animated.Value(startX)).current;
@@ -140,25 +132,107 @@ export const BottomBar: React.FC<BottomBarProps> = ({
   );
 };
 
-export const CenterText = ({ text }: { text: string }) => (
-  <View style={styles.centerContent}>
-    <Text>{text}</Text>
-  </View>
-);
+const CenterText = ({ text }: { text: string }) => {
+  const { width } = useWindowDimensions();
+  return (
+    <View style={styles.centerContent}>
+      {text ? (
+        <RenderHtml contentWidth={width} source={{ html: text }} />
+      ) : (
+        <Text>---</Text>
+      )}
+    </View>
+  );
+};
 
-export function Details({
-  activeTab,
-  groupedFields,
-  collapsedGroups,
-  toggleGroup,
-  item,
-  onTabPress,
-}: DetailsProps & { onTabPress: (tabKey: string, label: string) => void }) {
+export function Details() {
+  const params = useLocalSearchParams();
+  const { setTitle } = useHeader();
+
+  const [activeTab, setActiveTab] = useState("list");
+  const [collapsedGroups, setCollapsedGroups] = useState<
+    Record<string, boolean>
+  >({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [item, setItem] = useState<any>(null);
+
+  const nameClass = params.nameClass as string;
+
+  const fieldActive: Field[] = useMemo(() => {
+    try {
+      return params.field ? JSON.parse(params.field as string) : [];
+    } catch {
+      return [];
+    }
+  }, [params.field]);
+
+  const groupedFields = useMemo(() => {
+    const groups: Record<string, Field[]> = {};
+    fieldActive.forEach((field) => {
+      const groupName = field.groupLayout || "Thông tin chung";
+      if (!groups[groupName]) groups[groupName] = [];
+      groups[groupName].push(field);
+    });
+    return groups;
+  }, [fieldActive]);
+
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupName]: !prev[groupName],
+    }));
+  };
+
+  const handleChangeTab = (tabKey: string, label: string) => {
+    setActiveTab(tabKey);
+    setTitle(label);
+  };
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      setIsLoading(true);
+      try {
+        const id = Number(params.id);
+        if (!id || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
+
+        const response = await getDetails(nameClass, id);
+        setItem(response.data);
+      } catch (error) {
+        console.error(error);
+        Alert.alert("Lỗi", `Không thể tải chi tiết ${nameClass}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    setTitle("Thông tin");
+    setActiveTab("list");
+    fetchDetails();
+  }, [params.id, nameClass, setTitle]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <IsLoading />
+      </SafeAreaView>
+    );
+  }
+
+  if (!item) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <CenterText text="Không có dữ liệu" />
+      </SafeAreaView>
+    );
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "list":
         return (
-          <ScrollView contentContainerStyle={styles.scrollInner}>
+          <ScrollView
+            contentContainerStyle={{ padding: 16, paddingBottom: 70 }}
+          >
             <GroupList
               groupedFields={groupedFields}
               collapsedGroups={collapsedGroups}
@@ -171,7 +245,7 @@ export function Details({
       case "details":
         return <CenterText text="Chi tiết" />;
       case "notes":
-        return <CenterText text="Note content" />;
+        return <CenterText text={item.notes} />;
       case "history":
         return <CenterText text="Lịch sử content" />;
       case "attach":
@@ -182,28 +256,32 @@ export function Details({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {renderTabContent()}
-      <BottomBar activeTab={activeTab} onTabPress={onTabPress} />
-    </SafeAreaView>
+      <BottomBar activeTab={activeTab} onTabPress={handleChangeTab} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9F9F9" },
-  scrollInner: { padding: 16, paddingBottom: 80 },
-  loader: { flex: 1, justifyContent: "center" },
-  centerContent: { flex: 1, justifyContent: "center", alignItems: "center" },
+  centerContent: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    padding: 10,
+  },
   bottomBar: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FF3333",
-    paddingVertical: 8,
+    paddingVertical: 1,
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 80,
+    paddingBottom: 30,
   },
   bottomItem: { alignItems: "center", justifyContent: "center" },
   bottomLabel: {
@@ -216,7 +294,8 @@ const styles = StyleSheet.create({
   bottomLabelActive: { opacity: 1, fontWeight: "800" },
   underline: {
     position: "absolute",
-    bottom: 6,
+    bottom: 10,
+    marginBottom: 15,
     height: 2,
     backgroundColor: "#fff",
     borderRadius: 1,

@@ -177,7 +177,7 @@ export default function LoginScreen() {
           Alert.alert("Đăng nhập thất bại", "Phản hồi không hợp lệ từ server.");
         }
       } catch (error) {
-        console.error("Login error:", error);
+        if (__DEV__) console.error("Login error:", error);
         Alert.alert("Đăng nhập thất bại", "Không thể đăng nhập bằng Face ID.");
       }
     } catch (error) {

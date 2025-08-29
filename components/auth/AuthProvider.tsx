@@ -2,7 +2,6 @@ import { API_ENDPOINTS, BASE_URL } from "@/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosError, AxiosInstance } from "axios";
 import { jwtDecode } from "jwt-decode";
-import Toast from "react-native-toast-message";
 import React, { createContext, ReactNode, useContext, useEffect } from "react";
 import { useRouter } from "expo-router";
 
@@ -137,12 +136,12 @@ const refreshTokenPair = async (
 
     await AsyncStorage.multiRemove(["token", "refreshToken"]);
 
-    Toast.show({
-      type: "error",
-      text1: "Phiên đăng nhập hết hạn",
-      text2: "Vui lòng đăng nhập lại.",
-      position: "bottom",
-    });
+    // Toast.show({
+    //   type: "error",
+    //   text1: "Phiên đăng nhập hết hạn",
+    //   text2: "Vui lòng đăng nhập lại.",
+    //   position: "bottom",
+    // });
 
     return null;
   }
@@ -219,12 +218,12 @@ api.interceptors.response.use(
         isRefreshing = false;
         refreshSubscribers = [];
 
-        Toast.show({
-          type: "error",
-          text1: "Phiên đăng nhập đã hết hạn",
-          text2: "Vui lòng đăng nhập lại.",
-          position: "bottom",
-        });
+        // Toast.show({
+        //   type: "error",
+        //   text1: "Phiên đăng nhập đã hết hạn",
+        //   text2: "Vui lòng đăng nhập lại.",
+        //   position: "bottom",
+        // });
 
         return Promise.reject(err);
       }

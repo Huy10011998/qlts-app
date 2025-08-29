@@ -2,7 +2,8 @@ import { Field } from "@/services/data/callApi";
 import * as Crypto from "expo-crypto";
 import { TypeProperty } from "./enum";
 import api from "@/components/auth/AuthProvider";
-import Toast from "react-native-toast-message";
+
+export { Field };
 
 export const removeVietnameseTones = (str: string): string => {
   return str
@@ -58,13 +59,12 @@ export const callApi = async <T,>(
   } catch (error: any) {
     if (__DEV__) console.error(`[API ERROR] ${url}:`, error);
 
-    Toast.show({
-      type: "error",
-      text1: "API Error",
-      text2: error.response?.data?.message || "Có lỗi xảy ra!",
-    });
+    // Toast.show({
+    //   type: "error",
+    //   text1: "API Error",
+    //   text2: error.response?.data?.message || "Có lỗi xảy ra!",
+    // });
 
     throw error;
   }
 };
-export { Field };

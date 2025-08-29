@@ -12,8 +12,8 @@ import { Ionicons } from "@expo/vector-icons";
 type ButtonItem = {
   id: number;
   name: string;
-  route: string;
-  root: string;
+  route: string; // route chính
+  root: string; // root path cho tab
   icon: keyof typeof Ionicons.glyphMap;
 };
 
@@ -76,26 +76,23 @@ function BottomBarButton({
   );
 }
 
-export default function BottomBar({ visible = true }: { visible?: boolean }) {
+export default function BottomBar() {
   const router = useRouter();
   const pathname = usePathname();
 
   const [activeId, setActiveId] = useState<number>(1);
   const [lastActiveId, setLastActiveId] = useState<number>(1);
 
-  // Tự động active dựa vào pathname
+  // Cập nhật activeId theo URL
   useEffect(() => {
     const matched = buttons.find((btn) => pathname.startsWith(btn.route));
     if (matched) {
       setActiveId(matched.id);
-      setLastActiveId(matched.id); // lưu id này làm last active
+      setLastActiveId(matched.id);
     } else {
-      // nếu route hiện tại không match tab nào, giữ tab được bấm gần nhất
       setActiveId(lastActiveId);
     }
   }, [pathname, lastActiveId]);
-
-  if (!visible) return null;
 
   return (
     <View style={styles.container}>
@@ -107,8 +104,18 @@ export default function BottomBar({ visible = true }: { visible?: boolean }) {
             btn={btn}
             isActive={isActive}
             onPress={() => {
+              // Nếu đã ở màn hình chính thì không điều hướng lại
+              if (pathname === btn.route) return;
+
+              // Nếu đang ở màn hình con của tab này → quay về route chính
+              if (pathname.startsWith(btn.route)) {
+                router.replace(btn.route as Href);
+                return;
+              }
+
+              // Nếu đang ở tab khác → chuyển sang tab mới
               setActiveId(btn.id);
-              setLastActiveId(btn.id); // lưu lại tab bấm cuối cùng
+              setLastActiveId(btn.id);
               router.replace(btn.route as Href);
             }}
           />
