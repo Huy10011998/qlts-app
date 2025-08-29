@@ -5,7 +5,7 @@ import {
   HeaderRightButton,
 } from "@/components/HeaderOptions";
 
-function MayTinhScreens() {
+function ServerScreens() {
   const { title } = useHeader(); // bây giờ hook nằm bên trong provider
 
   return (
@@ -14,7 +14,7 @@ function MayTinhScreens() {
         name="index"
         options={{
           ...defaultHeaderOptions,
-          title: "Máy tính",
+          title: "Server",
           headerRight: () => <HeaderRightButton />,
         }}
       />
@@ -29,10 +29,10 @@ function MayTinhScreens() {
   );
 }
 
-export default function MayTinhLayout() {
+export default function ServerLayout() {
   return (
     <HeaderProvider>
-      <MayTinhScreens />
+      <ServerScreens />
     </HeaderProvider>
   );
 }

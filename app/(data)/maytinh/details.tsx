@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Details } from "@/app/(dataClass)/details";
 
 export default function ChiTietScreen() {

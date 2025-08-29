@@ -7,6 +7,8 @@ export default function DataLayout() {
       <Stack>
         <Stack.Screen name="maymoc" options={{ headerShown: false }} />
         <Stack.Screen name="maytinh" options={{ headerShown: false }} />
+        <Stack.Screen name="server" options={{ headerShown: false }} />
+        <Stack.Screen name="thietbiCNTT" options={{ headerShown: false }} />
       </Stack>
     </SearchProvider>
   );

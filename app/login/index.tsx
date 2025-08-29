@@ -95,6 +95,7 @@ export default function LoginScreen() {
       if (response?.data?.accessToken) {
         setToken(response.data.accessToken);
         setRefreshToken(response.data.refreshToken ?? null);
+        console.log("===token", token);
 
         Alert.alert(
           "Lưu đăng nhập?",

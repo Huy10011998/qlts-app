@@ -4,7 +4,7 @@ import { ListContainer } from "@/app/(dataClass)/list";
 import { AddItemAsset } from "@/components/AddItemAsset";
 
 export default function ServerScreen() {
-  const nameClass = "Server";
+  const nameClass = "ThietBiCNTT";
   const pageSize = 20;
 
   return (

@@ -5,7 +5,7 @@ import {
   HeaderRightButton,
 } from "@/components/HeaderOptions";
 
-function StackScreens() {
+function MayMocScreens() {
   const { title } = useHeader(); // bây giờ hook nằm bên trong provider
 
   return (
@@ -29,10 +29,10 @@ function StackScreens() {
   );
 }
 
-export default function MayTinhLayout() {
+export default function MayMocLayout() {
   return (
     <HeaderProvider>
-      <StackScreens />
+      <MayMocScreens />
     </HeaderProvider>
   );
 }
