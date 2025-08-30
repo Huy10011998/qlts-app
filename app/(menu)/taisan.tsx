@@ -13,7 +13,7 @@ import {
 import { FolderOpen, Folder, Pin } from "lucide-react-native";
 import { API_ENDPOINTS } from "@/config";
 import { useRouter } from "expo-router";
-import { callApi, removeVietnameseTones } from "@/utils/helper";
+import { callApi, removeVietnameseTones, splitNameClass } from "@/utils/helper";
 import { useSearch } from "@/context/SearchContext";
 import IsLoading from "@/components/ui/IconLoading";
 
@@ -63,7 +63,15 @@ const DropdownItem: React.FC<DropdownProps> = ({
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       onToggle(item.id);
     } else if (item.contentName_Mobile) {
-      router.push(item.contentName_Mobile as any);
+      const { key, label } = splitNameClass(item.contentName_Mobile);
+
+      router.push({
+        pathname: "/(data)/taisan",
+        params: {
+          nameClass: key,
+          titleHeader: label,
+        },
+      });
     }
   };
 

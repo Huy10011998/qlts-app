@@ -3,13 +3,10 @@ import { View, StyleSheet } from "react-native";
 import { ListContainer } from "@/app/(dataClass)/list";
 import { AddItemAsset } from "@/components/AddItemAsset";
 
-export default function ServerScreen() {
-  const nameClass = "ThietBiCNTT";
-  const pageSize = 20;
-
+export default function TaiSanScreen() {
   return (
     <View style={styles.container}>
-      <ListContainer nameClass={nameClass} pageSize={pageSize} />
+      <ListContainer />
       <AddItemAsset />
     </View>
   );

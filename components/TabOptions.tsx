@@ -11,18 +11,19 @@ type ScreenOption = {
   name: string;
   title?: string;
   icon: keyof typeof Ionicons.glyphMap;
+  showHeader?: boolean; // <-- Thêm thuộc tính này
 };
 
 type TabCustomProps = {
   screens?: ScreenOption[];
-  showHeader?: boolean;
+  showHeader?: boolean; // default cho tất cả tabs nếu tab không khai báo riêng
   backgroundColor?: string;
   customHeader?: React.ComponentType<any>;
 };
 
 export default function TabCustom({
   screens = [],
-  showHeader = true,
+  showHeader = true, // default value nếu tab không định nghĩa riêng
   backgroundColor = "#fff",
   customHeader: HeaderComponent = CustomHeader,
 }: TabCustomProps) {
@@ -31,8 +32,6 @@ export default function TabCustom({
   return (
     <Tabs
       screenOptions={{
-        headerShown: showHeader,
-        header: () => <HeaderComponent />,
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         tabBarButton: HapticTab,
         tabBarBackground: () => (
@@ -57,23 +56,25 @@ export default function TabCustom({
         }),
       }}
     >
-      {screens.map(
-        (screen, index) => (
-          console.log(`Registering tab: ${screen.name}`),
-          (
-            <Tabs.Screen
-              key={index}
-              name={screen.name}
-              options={{
-                title: screen.title || "",
-                tabBarIcon: ({ color }) => (
-                  <Ionicons name={screen.icon} size={24} color={color} />
-                ),
-              }}
-            />
-          )
-        )
-      )}
+      {screens.map((screen, index) => {
+        return (
+          <Tabs.Screen
+            key={index}
+            name={screen.name}
+            options={{
+              title: screen.title || "",
+              headerShown:
+                screen.showHeader !== undefined
+                  ? screen.showHeader
+                  : showHeader, // ưu tiên giá trị riêng, fallback về default
+              header: () => <HeaderComponent />,
+              tabBarIcon: ({ color }) => (
+                <Ionicons name={screen.icon} size={24} color={color} />
+              ),
+            }}
+          />
+        );
+      })}
     </Tabs>
   );
 }

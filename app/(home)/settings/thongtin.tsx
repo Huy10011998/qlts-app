@@ -14,12 +14,11 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../components/auth/AuthProvider";
 import { API_ENDPOINTS } from "@/config";
 import { changePasswordApi } from "@/services";
 import { callApi } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
-import { ScreenWithBottomBar } from "@/components/ContainerBottomBar";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface UserInfo {
   userName?: string;
@@ -45,7 +44,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ name, avatarUrl }) => (
         <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
       ) : (
         <Image
-          source={require("../../assets/images/user.jpeg")}
+          source={require("../../../assets/images/user.jpeg")}
           style={styles.avatarImage}
         />
       )}
@@ -161,7 +160,7 @@ const InfoScreen = () => {
     {
       icon: <Ionicons name="person-circle-outline" size={22} color="#fff" />,
       label: "Hồ sơ/Profile",
-      onPress: () => router.push("/(settings)/hoso"),
+      onPress: () => router.push("/settings/hoso"),
     },
     {
       icon: <Ionicons name="lock-closed-outline" size={22} color="#fff" />,
@@ -190,76 +189,71 @@ const InfoScreen = () => {
   ];
 
   return (
-    <ScreenWithBottomBar>
-      <View style={{ flex: 1 }}>
-        <ScrollView style={styles.container}>
-          <ProfileHeader
-            name={user?.moTa ?? "---"}
-            avatarUrl={user?.avatarUrl}
-          />
-          <View style={styles.section}>
-            {settings.map((item, index) => (
-              <SettingItem key={index} {...item} />
-            ))}
-          </View>
-        </ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <ProfileHeader name={user?.moTa ?? "---"} avatarUrl={user?.avatarUrl} />
+        <View style={styles.section}>
+          {settings.map((item, index) => (
+            <SettingItem key={index} {...item} />
+          ))}
+        </View>
+      </ScrollView>
 
-        {/* Loading overlay */}
-        {isLoading && <IsLoading />}
+      {/* Loading overlay */}
+      {isLoading && <IsLoading />}
 
-        {/* Modal đổi mật khẩu */}
-        <Modal
-          transparent
-          animationType="fade"
-          visible={isModalVisible}
-          onRequestClose={() => setIsModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
+      {/* Modal đổi mật khẩu */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
 
-              <TextInput
-                style={styles.input}
-                placeholder="Mật khẩu cũ"
-                secureTextEntry
-                value={oldPassword}
-                onChangeText={setOldPassword}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Mật khẩu mới"
-                secureTextEntry
-                value={newPassword}
-                onChangeText={setNewPassword}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Xác nhận mật khẩu mới"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
+            <TextInput
+              style={styles.input}
+              placeholder="Mật khẩu cũ"
+              secureTextEntry
+              value={oldPassword}
+              onChangeText={setOldPassword}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Mật khẩu mới"
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Xác nhận mật khẩu mới"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
 
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
-                  onPress={() => setIsModalVisible(false)}
-                >
-                  <Text style={styles.buttonText}>Hủy</Text>
-                </TouchableOpacity>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setIsModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Hủy</Text>
+              </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.button, styles.confirmButton]}
-                  onPress={handleChangePassword}
-                >
-                  <Text style={styles.buttonText}>Xác nhận</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={[styles.button, styles.confirmButton]}
+                onPress={handleChangePassword}
+              >
+                <Text style={styles.buttonText}>Xác nhận</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </View>
-    </ScreenWithBottomBar>
+        </View>
+      </Modal>
+    </View>
   );
 };
 

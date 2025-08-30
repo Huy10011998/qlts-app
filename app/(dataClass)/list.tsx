@@ -14,6 +14,7 @@ import IsLoading from "@/components/ui/IconLoading";
 import { useSearch } from "@/context/SearchContext";
 import { useRouter } from "expo-router";
 import { getFieldActive, getList, getPropertyClass } from "@/services";
+import { useLocalSearchParams } from "expo-router";
 
 interface CardItemProps {
   item: Record<string, any>;
@@ -30,11 +31,6 @@ interface SearchBarProps {
   visible: boolean;
   value: string;
   onChange: (text: string) => void;
-}
-
-interface ListContainerProps {
-  nameClass: string;
-  pageSize: number;
 }
 
 export function CardItem({ item, fields, icon, onPress }: CardItemProps) {
@@ -83,11 +79,10 @@ export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   );
 }
 
-export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
-  const [maytinh, setMayTinh] = useState<Record<string, any>[]>([]);
+export function ListContainer() {
+  const [taisan, setTaiSan] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
   const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
-  const [, setDetails] = useState();
   const [propertyClass, setPropertyClass] = useState<PropertyClass>();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -97,6 +92,9 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const { isSearchOpen } = useSearch();
   const router = useRouter();
+  const { nameClass } = useLocalSearchParams<{ nameClass: string }>();
+
+  const pageSize = 20;
 
   const searchInputRef = useRef<TextInput>(null);
 
@@ -110,7 +108,7 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
   const handlePress = async (item: Record<string, any>) => {
     try {
       router.push({
-        pathname: "/maytinh/details",
+        pathname: "/taisan/details",
         params: {
           id: item.id,
           field: JSON.stringify(fieldActive),
@@ -119,7 +117,7 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
       });
     } catch (error) {
       console.error(error);
-      Alert.alert("Lỗi", "Không thể tải chi tiết máy tính");
+      Alert.alert(`Lỗi", "Không thể tải chi tiết ${nameClass}`);
     } finally {
       setIsLoading(false);
     }
@@ -162,10 +160,10 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
         const totalItems = response?.data?.totalCount || 0;
 
         if (isLoadMore) {
-          setMayTinh((prev) => [...prev, ...newItems]);
+          setTaiSan((prev) => [...prev, ...newItems]);
           setSkipSize(currentSkip + pageSize);
         } else {
-          setMayTinh(newItems);
+          setTaiSan(newItems);
           setSkipSize(pageSize);
         }
 
@@ -173,7 +171,7 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
       } catch (error) {
         if (__DEV__) console.error("API error:", error);
         Alert.alert("Lỗi", "Không thể tải dữ liệu.");
-        if (!isLoadMore) setMayTinh([]);
+        if (!isLoadMore) setTaiSan([]);
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
@@ -201,7 +199,7 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
 
   // LOAD MORE
   const handleLoadMore = () => {
-    if (maytinh.length < total && !isLoadingMore) {
+    if (taisan.length < total && !isLoadingMore) {
       fetchData(true);
     }
   };
@@ -221,7 +219,7 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
             />
           )}
           <FlatList
-            data={maytinh}
+            data={taisan}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => (
               <CardItem
@@ -238,7 +236,7 @@ export function ListContainer({ nameClass, pageSize }: ListContainerProps) {
             ListHeaderComponent={
               <View style={styles.stickyHeader}>
                 <Text style={styles.header}>
-                  Tổng số tài sản: {total} (Đã tải: {maytinh.length})
+                  Tổng số tài sản: {total} (Đã tải: {taisan.length})
                 </Text>
               </View>
             }

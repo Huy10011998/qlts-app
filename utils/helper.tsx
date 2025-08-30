@@ -68,3 +68,13 @@ export const callApi = async <T,>(
     throw error;
   }
 };
+
+export const splitNameClass = (nameClass: string) => {
+  if (!nameClass) return { key: "", label: "" };
+
+  const parts = nameClass.split("-");
+  return {
+    key: parts[0]?.trim() || "",
+    label: parts[1]?.trim() || "",
+  };
+};

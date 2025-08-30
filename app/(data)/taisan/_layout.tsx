@@ -1,12 +1,13 @@
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { HeaderProvider, useHeader } from "@/context/HeaderContext";
 import {
   defaultHeaderOptions,
   HeaderRightButton,
 } from "@/components/HeaderOptions";
 
-function MayTinhScreens() {
+function TaiSanScreens() {
   const { title } = useHeader(); // bây giờ hook nằm bên trong provider
+  const { titleHeader } = useLocalSearchParams<{ titleHeader?: string }>();
 
   return (
     <Stack>
@@ -14,7 +15,7 @@ function MayTinhScreens() {
         name="index"
         options={{
           ...defaultHeaderOptions,
-          title: "Máy tính",
+          title: titleHeader || "Tài sản",
           headerRight: () => <HeaderRightButton />,
         }}
       />
@@ -29,10 +30,10 @@ function MayTinhScreens() {
   );
 }
 
-export default function MayTinhLayout() {
+export default function TaiSanLayout() {
   return (
     <HeaderProvider>
-      <MayTinhScreens />
+      <TaiSanScreens />
     </HeaderProvider>
   );
 }
