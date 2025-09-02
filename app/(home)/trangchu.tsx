@@ -11,19 +11,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { MenuItem, MenuItemCardProps } from "@/types";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth / 3;
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
-type MenuItem = {
-  icon: React.ReactNode;
-  label: string;
-  notificationCount?: number;
-  onPress?: () => void;
-};
-type MenuItemCardProps = MenuItem & { index: number };
 
 const MenuItemCard: React.FC<MenuItemCardProps> = ({
   icon,

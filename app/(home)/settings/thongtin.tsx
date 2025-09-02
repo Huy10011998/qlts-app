@@ -19,23 +19,7 @@ import { changePasswordApi } from "@/services";
 import { callApi } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
 import { useAuth } from "@/components/auth/AuthProvider";
-
-interface UserInfo {
-  userName?: string;
-  moTa?: string;
-  avatarUrl?: string;
-}
-
-interface SettingItemProps {
-  icon: React.ReactNode;
-  label: string;
-  onPress: () => void;
-}
-
-interface ProfileHeaderProps {
-  name: string;
-  avatarUrl?: string;
-}
+import { ProfileHeaderProps, SettingItemProps, UserInfo } from "@/types";
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ name, avatarUrl }) => (
   <View style={styles.profileHeader}>

@@ -12,12 +12,13 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Field, getDetails } from "@/services/data/callApi";
 import { getFieldValue } from "@/utils/helper";
 import { useLocalSearchParams } from "expo-router";
 import { useHeader } from "@/context/HeaderContext";
 import IsLoading from "@/components/ui/IconLoading";
 import RenderHtml from "react-native-render-html";
+import { Field } from "@/types";
+import { getDetails } from "@/services/data/callApi";
 
 const TAB_ITEMS = [
   { key: "list", label: "Thông tin", icon: "document-text-outline" },

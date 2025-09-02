@@ -1,0 +1,80 @@
+// src/types/components.d.ts
+
+import React, { PropsWithChildren, ReactElement } from "react";
+import { Field, Item } from "./model.d";
+import { MenuItem } from "./api.d";
+import { Ionicons } from "@expo/vector-icons";
+import { TextInputProps, TextProps, ViewProps } from "react-native";
+
+// Props cho component CardItem
+export interface CardItemProps {
+  item: Record<string, any>;
+  fields: Field[];
+  icon?: string;
+  onPress: (item: Record<string, any>) => void;
+}
+
+// Props cho SearchBar
+export interface SearchBarProps {
+  visible: boolean;
+  value: string;
+  onChange: (text: string) => void;
+}
+
+// Props cho phần header của profile
+export interface ProfileHeaderProps {
+  name: string;
+  avatarUrl?: string;
+}
+
+// Props cho setting item
+export interface SettingItemProps {
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
+}
+
+// Props cho Dropdown
+export type DropdownProps = {
+  item: Item;
+  level?: number;
+  expandedIds: (string | number)[];
+  onToggle: (id: string | number) => void;
+};
+
+export type MenuItemCardProps = MenuItem & { index: number };
+
+export type Props = PropsWithChildren<{
+  headerImage: ReactElement;
+  headerBackgroundColor: { dark: string; light: string };
+}>;
+
+export type ScreenOption = {
+  name: string;
+  title?: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  showHeader?: boolean; // <-- Thêm thuộc tính này
+};
+
+export type TabCustomProps = {
+  screens?: ScreenOption[];
+  showHeader?: boolean; // default cho tất cả tabs nếu tab không khai báo riêng
+  backgroundColor?: string;
+  customHeader?: React.ComponentType<any>;
+};
+
+export type ThemedTextProps = TextProps & {
+  lightColor?: string;
+  darkColor?: string;
+  type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
+};
+
+export type ThemedTextInputProps = TextInputProps & {
+  lightColor?: string;
+  darkColor?: string;
+};
+
+export type ThemedViewProps = ViewProps & {
+  lightColor?: string;
+  darkColor?: string;
+};

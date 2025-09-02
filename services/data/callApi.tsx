@@ -2,51 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL } from "@/config";
 import { getValidToken } from "@/components/auth/AuthProvider";
-
-type Conditions = {
-  property: string;
-  operator: number;
-  value: string;
-  type: number;
-};
-
-export type Field = {
-  iD_Class: number;
-  name: string;
-  moTa: string;
-  isShowGrid: boolean;
-  isUnique: boolean;
-  isRequired: boolean;
-  isActive: boolean;
-  typeProperty: number;
-  maxLength: number;
-  maxValue: number;
-  minValue: number;
-  referenceName: string;
-  isMulti: boolean;
-  stt: number;
-  columnSize: number;
-  columnNone: number;
-  cascadeClearFields: string;
-  parentsFields: string;
-  groupLayout: string;
-  isShowDetail: boolean;
-  enumName: string;
-  prefix: string;
-  defaultValue: string;
-  defaultDateNow: boolean;
-  width: string;
-  isReadOnly: boolean;
-  stT_Grid: number;
-  notShowReference: boolean;
-  referenceNameMulti: string;
-  referenceProperty: string;
-  notShowSplit: boolean;
-  isShowMobile: boolean;
-  id: number;
-  iD_Class_Name: string;
-  typeProperty_MoTa: number;
-};
+import { Conditions, Field } from "@/types";
 
 export const getList = async (
   nameCLass: string,

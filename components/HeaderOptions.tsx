@@ -1,6 +1,5 @@
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
-import { TouchableOpacity } from "react-native";
+import { Image, StyleSheet, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSearch } from "@/context/SearchContext";
 import { NavigationProp } from "@react-navigation/native";

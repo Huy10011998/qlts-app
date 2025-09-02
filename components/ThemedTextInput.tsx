@@ -1,12 +1,8 @@
 // components/ThemedTextInput.tsx
 import React from "react";
-import { StyleSheet, TextInput, TextInputProps } from "react-native";
+import { StyleSheet, TextInput } from "react-native";
 import { useThemeColor } from "../hooks/useThemeColor";
-
-export type ThemedTextInputProps = TextInputProps & {
-  lightColor?: string;
-  darkColor?: string;
-};
+import { ThemedTextInputProps } from "@/types";
 
 export function ThemedTextInput({
   style,

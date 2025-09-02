@@ -1,13 +1,8 @@
 import { API_ENDPOINTS } from "@/config";
 import { callApi, md5Hash } from "@/utils/helper";
 import { getValidToken } from "@/components/auth/AuthProvider";
+import { ChangePasswordResponse, LoginResponse } from "@/types";
 
-interface LoginResponse {
-  data: {
-    accessToken: string;
-    refreshToken?: string;
-  };
-}
 export const loginApi = async (
   userName: string,
   userPassword: string
@@ -21,11 +16,6 @@ export const loginApi = async (
 
   return response;
 };
-
-interface ChangePasswordResponse {
-  success: boolean;
-  message: string;
-}
 
 export const changePasswordApi = async (
   oldPassword: string,

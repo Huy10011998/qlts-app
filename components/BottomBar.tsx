@@ -8,14 +8,7 @@ import {
 } from "react-native";
 import { useRouter, usePathname, Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-type ButtonItem = {
-  id: number;
-  name: string;
-  route: string; // route chính
-  root: string; // root path cho tab
-  icon: keyof typeof Ionicons.glyphMap;
-};
+import { ButtonItem } from "@/types";
 
 const buttons: ButtonItem[] = [
   {

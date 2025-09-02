@@ -6,20 +6,7 @@ import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import CustomHeader from "@/components/HeaderOptions";
-
-type ScreenOption = {
-  name: string;
-  title?: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  showHeader?: boolean; // <-- Thêm thuộc tính này
-};
-
-type TabCustomProps = {
-  screens?: ScreenOption[];
-  showHeader?: boolean; // default cho tất cả tabs nếu tab không khai báo riêng
-  backgroundColor?: string;
-  customHeader?: React.ComponentType<any>;
-};
+import { TabCustomProps } from "@/types";
 
 export default function TabCustom({
   screens = [],

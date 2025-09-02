@@ -15,23 +15,7 @@ import { useSearch } from "@/context/SearchContext";
 import { useRouter } from "expo-router";
 import { getFieldActive, getList, getPropertyClass } from "@/services";
 import { useLocalSearchParams } from "expo-router";
-
-interface CardItemProps {
-  item: Record<string, any>;
-  fields: Field[];
-  icon?: string;
-  onPress: (item: Record<string, any>) => void;
-}
-
-interface PropertyClass {
-  iconMobile: string;
-}
-
-interface SearchBarProps {
-  visible: boolean;
-  value: string;
-  onChange: (text: string) => void;
-}
+import { CardItemProps, PropertyClass, SearchBarProps } from "@/types";
 
 export function CardItem({ item, fields, icon, onPress }: CardItemProps) {
   return (

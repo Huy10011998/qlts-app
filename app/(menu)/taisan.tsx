@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { callApi, removeVietnameseTones, splitNameClass } from "@/utils/helper";
 import { useSearch } from "@/context/SearchContext";
 import IsLoading from "@/components/ui/IconLoading";
+import { DropdownProps, GetMenuActiveResponse, Item } from "@/types";
 
 // Bật LayoutAnimation cho Android
 if (
@@ -24,29 +25,6 @@ if (
 ) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-interface Item {
-  id: string | number;
-  label: string;
-  parent: string | number | null;
-  typeGroup: number;
-  children: Item[];
-  contentName_Mobile: string | null;
-  stt: string | number;
-}
-
-interface GetMenuActiveResponse {
-  data: Item[];
-  success?: boolean;
-  message?: string;
-}
-
-type DropdownProps = {
-  item: Item;
-  level?: number;
-  expandedIds: (string | number)[];
-  onToggle: (id: string | number) => void;
-};
 
 const DropdownItem: React.FC<DropdownProps> = ({
   item,

@@ -1,21 +1,9 @@
-import api from "@/components/auth/AuthProvider";
 import IsLoading from "@/components/ui/IconLoading";
 import { API_ENDPOINTS } from "@/config";
+import { User } from "@/types";
 import { callApi } from "@/utils/helper";
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, ScrollView, Alert } from "react-native";
-
-interface User {
-  moTa?: string;
-  email?: string;
-  donVi?: string;
-  phongBan?: string;
-  boPhan?: string;
-  toNhom?: string;
-  chucVu?: string;
-  chucDanh?: string;
-  avatarUrl?: string;
-}
 
 const ProfileScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);

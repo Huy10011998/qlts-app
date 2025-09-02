@@ -10,18 +10,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "expo-router";
-
-// ================= TYPES =================
-interface AuthContextType {
-  token: string | null;
-  setToken: (token: string | null) => Promise<void>;
-  setRefreshToken: (refreshToken: string | null) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-interface JwtPayload {
-  exp: number;
-}
+import { AuthContextType, JwtPayload } from "@/types";
 
 // ================= CONTEXT =================
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

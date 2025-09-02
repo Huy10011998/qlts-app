@@ -1,9 +1,7 @@
-import { Field } from "@/services/data/callApi";
 import * as Crypto from "expo-crypto";
 import { TypeProperty } from "./enum";
 import api from "@/components/auth/AuthProvider";
-
-export { Field };
+import { Field } from "@/types";
 
 export const removeVietnameseTones = (str: string): string => {
   return str
@@ -78,3 +76,4 @@ export const splitNameClass = (nameClass: string) => {
     label: parts[1]?.trim() || "",
   };
 };
+export { Field };
