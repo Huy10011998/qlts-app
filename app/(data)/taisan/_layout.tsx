@@ -12,7 +12,7 @@ function TaiSanScreens() {
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="list"
         options={{
           ...defaultHeaderOptions,
           title: titleHeader || "Tài sản",
@@ -24,6 +24,13 @@ function TaiSanScreens() {
         options={{
           ...defaultHeaderOptions,
           title: title || "Thông tin", // title sẽ phản ứng theo context
+        }}
+      />
+      <Stack.Screen
+        name="related-list"
+        options={{
+          ...defaultHeaderOptions,
+          title: title || "Chi tiết", // title sẽ phản ứng theo context
         }}
       />
     </Stack>

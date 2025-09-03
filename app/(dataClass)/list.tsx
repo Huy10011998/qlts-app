@@ -2,43 +2,23 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   TextInput,
   FlatList,
   Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { getFieldValue, normalizeText } from "@/utils/helper";
+import { normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
 import { useSearch } from "@/context/SearchContext";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { getFieldActive, getList, getPropertyClass } from "@/services";
-import { CardItemProps, Field, PropertyClass, SearchBarProps } from "@/types";
-
-export function CardItem({ item, fields, icon, onPress }: CardItemProps) {
-  return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(item)}>
-      <View style={styles.avatar}>
-        <Ionicons
-          name={
-            (icon as keyof typeof Ionicons.glyphMap) || "document-text-outline"
-          }
-          size={24}
-          color="#FF3333"
-        />
-      </View>
-      <View style={styles.info}>
-        {fields.map((field) => (
-          <Text key={field.name} style={styles.text}>
-            <Text style={styles.label}>{field.moTa}: </Text>
-            {getFieldValue(item, field)}
-          </Text>
-        ))}
-      </View>
-    </TouchableOpacity>
-  );
-}
+import {
+  Field,
+  ListContainerProps,
+  PropertyClass,
+  SearchBarProps,
+} from "@/types";
+import ListCardItem from "@/components/ListCardItem";
 
 export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   const inputRef = useRef<TextInput>(null);
@@ -62,7 +42,7 @@ export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   );
 }
 
-export default function ListContainer() {
+export default function ListContainer({ name }: ListContainerProps) {
   const [taisan, setTaiSan] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
   const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
@@ -73,9 +53,14 @@ export default function ListContainer() {
   const [total, setTotal] = useState(0);
   const [searchText, setSearchText] = useState("");
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+
   const { isSearchOpen } = useSearch();
   const router = useRouter();
-  const { nameClass } = useLocalSearchParams<{ nameClass: string }>();
+  const params = useLocalSearchParams<{ nameClass: string }>();
+
+  // Ưu tiên lấy `name` từ props, nếu không có thì lấy từ params
+  const nameClass = name || params.nameClass;
+
   const pageSize = 20;
   const searchInputRef = useRef<TextInput>(null);
 
@@ -85,9 +70,6 @@ export default function ListContainer() {
     }
   }, [isSearchOpen]);
 
-  // Hàm load fieldShowMobile từ AsyncStorage
-
-  //  HANDLE PRESS ITEM
   const handlePress = async (item: Record<string, any>) => {
     try {
       router.push({
@@ -106,14 +88,14 @@ export default function ListContainer() {
     }
   };
 
-  //  FETCH DATA
   const fetchData = useCallback(
     async (isLoadMore = false) => {
+      if (!nameClass) return;
+
       if (isLoadMore) setIsLoadingMore(true);
       else setIsLoading(true);
 
       try {
-        // Lấy Field nếu lần đầu
         if (!isLoadMore && fieldActive.length === 0) {
           const responseFieldActive = await getFieldActive(nameClass);
           const activeFields = responseFieldActive?.data || [];
@@ -125,7 +107,6 @@ export default function ListContainer() {
           setFieldShowMobile(showMobileFields);
         }
 
-        // Lấy PropertyClass nếu lần đầu
         if (!isLoadMore && !propertyClass) {
           const responsePropertyClass = await getPropertyClass(nameClass);
           setPropertyClass(responsePropertyClass?.data);
@@ -168,24 +149,22 @@ export default function ListContainer() {
     [fieldActive, propertyClass, skipSize, nameClass, pageSize, searchText]
   );
 
-  //  GỌI API LẦN ĐẦU HOẶC LOAD CACHE
   useEffect(() => {
+    if (!nameClass) return;
     (async () => {
-      await fetchData(); // sau đó gọi API
+      await fetchData();
     })();
     setIsFirstLoad(false);
-  }, []);
+  }, [nameClass]);
 
-  // DEBOUNCE TÌM KIẾM
   useEffect(() => {
-    if (isFirstLoad) return;
+    if (isFirstLoad || !nameClass) return;
     const timeout = setTimeout(() => {
       fetchData(false);
     }, 500);
     return () => clearTimeout(timeout);
-  }, [searchText]);
+  }, [searchText, nameClass]);
 
-  // LOAD MORE
   const handleLoadMore = () => {
     if (taisan.length < total && !isLoadingMore) {
       fetchData(true);
@@ -196,43 +175,37 @@ export default function ListContainer() {
 
   return (
     <View>
-      {isLoading ? (
-        <IsLoading />
-      ) : (
-        <View>
-          {isSearchOpen && (
-            <SearchBar
-              visible={true}
-              value={searchText}
-              onChange={(text) => setSearchText(normalizeText(text))}
-            />
-          )}
-          <FlatList
-            data={taisan}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => (
-              <CardItem
-                item={item}
-                fields={fieldShowMobile}
-                icon={propertyClass?.iconMobile || ""}
-                onPress={(item) => handlePress(item)}
-              />
-            )}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={isLoadingMore ? <IsLoading /> : null}
-            ListHeaderComponent={
-              <View style={styles.stickyHeader}>
-                <Text style={styles.header}>
-                  Tổng số tài sản: {total} (Đã tải: {taisan.length})
-                </Text>
-              </View>
-            }
-            stickyHeaderIndices={[0]}
-          />
-        </View>
+      {isSearchOpen && (
+        <SearchBar
+          visible={true}
+          value={searchText}
+          onChange={(text) => setSearchText(normalizeText(text))}
+        />
       )}
+      <FlatList
+        data={taisan}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <ListCardItem
+            item={item}
+            fields={fieldShowMobile}
+            icon={propertyClass?.iconMobile || ""}
+            onPress={handlePress}
+          />
+        )}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={isLoadingMore ? <IsLoading /> : null}
+        ListHeaderComponent={
+          <View style={styles.stickyHeader}>
+            <Text style={styles.header}>
+              Tổng số tài sản: {total} (Đã tải: {taisan.length})
+            </Text>
+          </View>
+        }
+        stickyHeaderIndices={[0]}
+      />
     </View>
   );
 }
@@ -249,31 +222,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     zIndex: 10,
   },
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    marginHorizontal: 12,
-    marginVertical: 6,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#E0F2FE",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  info: { flex: 1 },
   text: { fontSize: 14, color: "#000", marginBottom: 2 },
-  label: { fontWeight: "bold", color: "#000" },
   searchBox: {
     borderWidth: 1,
     borderColor: "#ccc",

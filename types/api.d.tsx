@@ -26,6 +26,7 @@ export interface PropertyClass {
 }
 
 export interface MenuItemString {
+  name: string | number | (string | number)[] | null | undefined;
   id: string;
   label: string;
   icon?: keyof typeof Ionicons.glyphMap; // Dùng cho icon dạng chuỗi

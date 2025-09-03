@@ -3,7 +3,7 @@ import { ScrollView } from "react-native";
 import { TabContentProps } from "@/types";
 import GroupList from "./GroupList";
 import CenterText from "./ThemedCenterText";
-import DeTails from "@/app/(dataProperty)/details";
+import DeTailsTab from "./DetailsTab";
 
 export default function TabContent({
   activeTab,
@@ -25,7 +25,7 @@ export default function TabContent({
         />
       </ScrollView>
     ),
-    details: <DeTails />,
+    details: <DeTailsTab />,
     notes: <CenterText text={item.notes || "---"} />,
     history: <CenterText text="Lịch sử content" />,
     attach: <CenterText text="Tệp content" />,

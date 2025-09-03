@@ -12,10 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { MenuItemString } from "@/types";
 import { getClassReference } from "@/services/data/callApi";
 import IsLoading from "@/components/ui/IconLoading";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-export default function DeTails() {
+export default function DeTailsTab() {
   const params = useLocalSearchParams();
+  const router = useRouter();
+
   const nameClass = params.nameClass as string;
   const id = Number(params.id);
 
@@ -40,6 +42,7 @@ export default function DeTails() {
             const iconName = item.iconMobile as keyof typeof Ionicons.glyphMap;
             return {
               id: String(item.id),
+              name: item.name || "", // <-- thêm name để truyền qua params
               label: item.moTa || "Không có mô tả",
               icon: Ionicons.glyphMap[iconName]
                 ? iconName
@@ -58,8 +61,21 @@ export default function DeTails() {
     fetchDetails();
   }, [nameClass, id]);
 
+  const handlePress = (item: MenuItemString) => {
+    router.push({
+      pathname: "/(data)/taisan/related-list", // đường dẫn tới màn hình đích
+      params: {
+        name: item.name, // truyền name
+      },
+    });
+  };
+
   const renderItem = ({ item }: { item: MenuItemString }) => (
-    <TouchableOpacity style={styles.item} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.item}
+      activeOpacity={0.7}
+      onPress={() => handlePress(item)}
+    >
       <Ionicons
         name={item.icon}
         size={24}

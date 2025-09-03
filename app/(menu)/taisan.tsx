@@ -43,7 +43,7 @@ const DropdownItem: React.FC<DropdownProps> = ({
     } else if (item.contentName_Mobile) {
       const { key, label } = splitNameClass(item.contentName_Mobile);
       router.push({
-        pathname: "/(data)/taisan",
+        pathname: "/(data)/taisan/list",
         params: {
           nameClass: key,
           titleHeader: label,

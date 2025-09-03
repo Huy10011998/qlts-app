@@ -5,6 +5,8 @@ import { Field, Item } from "./model.d";
 import { MenuItemComponent } from "./api.d";
 import { Ionicons } from "@expo/vector-icons";
 import { TextInputProps, TextProps, ViewProps } from "react-native";
+import { getFieldValue } from "@/utils/helper";
+import { TAB_ITEMS, TabItem } from "@/app/(dataClass)/details";
 
 // Props cho component CardItem
 export interface CardItemProps {
@@ -99,4 +101,31 @@ export interface GroupListProps {
   toggleGroup: (groupName: string) => void;
   getFieldValue: (item: any, field: Field) => string;
   item: any;
+}
+
+export interface BottomBarProps {
+  tabs: readonly TabItem[]; // thêm readonly
+  activeTab: string;
+  onTabPress: (tabKey: string, label: string) => void;
+}
+export interface HeaderContextProps {
+  title: string;
+  setTitle: (t: string) => void;
+}
+
+export interface DetailsProps {
+  children: (props: {
+    activeTab: string;
+    setActiveTab: (tabKey: string, label: string) => void;
+    groupedFields: Record<string, Field[]>;
+    collapsedGroups: Record<string, boolean>;
+    toggleGroup: (groupName: string) => void;
+    item: any;
+    getFieldValue: typeof getFieldValue;
+    TAB_ITEMS: typeof TAB_ITEMS;
+  }) => React.ReactNode;
+}
+
+export interface ListContainerProps {
+  name?: string; // name có thể được truyền từ bên ngoài
 }

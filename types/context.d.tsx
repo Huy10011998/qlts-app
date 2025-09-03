@@ -1,5 +1,7 @@
 // src/types/context.d.ts
 
+import { Ionicons } from "@expo/vector-icons";
+
 // Context cho xác thực
 export interface AuthContextType {
   token: string | null;
@@ -14,7 +16,8 @@ export interface JwtPayload {
 }
 
 // Context cho Header
-export interface HeaderContextProps {
-  title: string;
-  setTitle: (t: string) => void;
+export interface TabItem {
+  key: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
 }
