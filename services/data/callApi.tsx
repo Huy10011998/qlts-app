@@ -1,6 +1,5 @@
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL } from "@/config";
+import { API_ENDPOINTS, BASE_URL } from "@/config";
 import { getValidToken } from "@/components/auth/AuthProvider";
 import { Conditions, Field } from "@/types";
 
@@ -54,7 +53,7 @@ export const getFieldActive = async (iD_Class_MoTa: string) => {
 
     const config = {
       method: "POST" as const,
-      url: `${BASE_URL}/Common/get-fields-active`,
+      url: API_ENDPOINTS.GET_FIELD_ACTIVE,
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
         Authorization: `Bearer ${token}`,
@@ -81,7 +80,7 @@ export const getPropertyClass = async (nameClass: string) => {
 
     const config = {
       method: "POST" as const,
-      url: `${BASE_URL}/Common/get-class-by-name`,
+      url: API_ENDPOINTS.GET_CLASS_BY_NAME,
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
         Authorization: `Bearer ${token}`,
@@ -100,7 +99,8 @@ export const getPropertyClass = async (nameClass: string) => {
 
 export const getDetails = async (nameCLass: string, id: number) => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = await getValidToken();
+
     if (!token) {
       throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
     }
@@ -114,6 +114,33 @@ export const getDetails = async (nameCLass: string, id: number) => {
       },
       data: {
         id,
+      },
+    };
+    const response = await axios(config);
+    return response.data;
+  } catch (error) {
+    if (__DEV__) console.error(`Get Details ${nameCLass} API error:`, error);
+    throw error;
+  }
+};
+
+export const getClassReference = async (nameCLass: string) => {
+  try {
+    const token = await getValidToken();
+
+    if (!token) {
+      throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+    }
+
+    const config = {
+      method: "POST" as const,
+      url: API_ENDPOINTS.GET_CLASS_REFERENCE,
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        referenceName: nameCLass,
       },
     };
     const response = await axios(config);

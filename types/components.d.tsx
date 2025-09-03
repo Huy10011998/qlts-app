@@ -2,7 +2,7 @@
 
 import React, { PropsWithChildren, ReactElement } from "react";
 import { Field, Item } from "./model.d";
-import { MenuItem } from "./api.d";
+import { MenuItemComponent } from "./api.d";
 import { Ionicons } from "@expo/vector-icons";
 import { TextInputProps, TextProps, ViewProps } from "react-native";
 
@@ -13,7 +13,6 @@ export interface CardItemProps {
   icon?: string;
   onPress: (item: Record<string, any>) => void;
 }
-
 // Props cho SearchBar
 export interface SearchBarProps {
   visible: boolean;
@@ -42,7 +41,9 @@ export type DropdownProps = {
   onToggle: (id: string | number) => void;
 };
 
-export type MenuItemCardProps = MenuItem & { index: number };
+export interface MenuItemCardProps extends MenuItemComponent {
+  index: number;
+}
 
 export type Props = PropsWithChildren<{
   headerImage: ReactElement;
@@ -78,3 +79,24 @@ export type ThemedViewProps = ViewProps & {
   lightColor?: string;
   darkColor?: string;
 };
+
+export interface TabContentProps {
+  activeTab: string;
+  groupedFields: Record<string, Field[]>;
+  collapsedGroups: Record<string, boolean>;
+  toggleGroup: (groupName: string) => void;
+  getFieldValue: (item: any, field: Field) => string;
+  item: any;
+}
+
+export interface CenterTextProps {
+  text: string;
+}
+
+export interface GroupListProps {
+  groupedFields: Record<string, Field[]>;
+  collapsedGroups: Record<string, boolean>;
+  toggleGroup: (groupName: string) => void;
+  getFieldValue: (item: any, field: Field) => string;
+  item: any;
+}

@@ -44,7 +44,6 @@ function AppNavigator({ colorScheme }: { colorScheme: "light" | "dark" }) {
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(home)" options={{ headerShown: false }} />
-            <Stack.Screen name="(settings)" options={{ headerShown: false }} />
             <Stack.Screen name="(menu)" options={{ headerShown: false }} />
             <Stack.Screen name="(data)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" options={{ headerShown: false }} />

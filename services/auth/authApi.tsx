@@ -23,6 +23,7 @@ export const changePasswordApi = async (
 ): Promise<ChangePasswordResponse> => {
   try {
     const token = await getValidToken(); // nhớ await token
+
     if (!token) {
       throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
     }

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { MenuItem, MenuItemCardProps } from "@/types";
+import { MenuItemComponent, MenuItemCardProps } from "@/types";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth / 3;
@@ -59,15 +59,17 @@ const HomeScreen: React.FC = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const menuItems: MenuItem[] = [
+  const menuItems: MenuItemComponent[] = [
     {
       onPress: () => router.push("/(menu)/taisan"),
       icon: <Ionicons name="server" size={24} color="white" />,
       label: "Tài sản",
+      id: "",
     },
     {
       icon: <Ionicons name="person-add" size={24} color="white" />,
       label: "Công việc",
+      id: "",
     },
     // {
     //   icon: <Ionicons name="desktop" size={24} color="white" />,
@@ -98,6 +100,7 @@ const HomeScreen: React.FC = () => {
     {
       icon: <Ionicons name="pricetag" size={24} color="white" />,
       label: "Ticket",
+      id: "",
     },
   ];
 

@@ -5,20 +5,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
   Animated,
   Dimensions,
   Alert,
-  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getFieldValue } from "@/utils/helper";
 import { useLocalSearchParams } from "expo-router";
 import { useHeader } from "@/context/HeaderContext";
 import IsLoading from "@/components/ui/IconLoading";
-import RenderHtml from "react-native-render-html";
 import { Field } from "@/types";
 import { getDetails } from "@/services/data/callApi";
+import TabContent from "@/components/TabContent";
 
 const TAB_ITEMS = [
   { key: "list", label: "Thông tin", icon: "document-text-outline" },
@@ -31,50 +29,6 @@ const TAB_ITEMS = [
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const TAB_WIDTH = SCREEN_WIDTH / TAB_ITEMS.length;
 const UNDERLINE_WIDTH = TAB_WIDTH * 0.6;
-
-const GroupList = ({
-  groupedFields,
-  collapsedGroups,
-  toggleGroup,
-  getFieldValue,
-  item,
-}: {
-  groupedFields: Record<string, Field[]>;
-  collapsedGroups: Record<string, boolean>;
-  toggleGroup: (groupName: string) => void;
-  getFieldValue: (item: any, field: Field) => string;
-  item: any;
-}) => (
-  <>
-    {Object.entries(groupedFields).map(([groupName, fields]) => {
-      const isCollapsed = collapsedGroups[groupName];
-      return (
-        <View key={groupName} style={styles.groupCard}>
-          <TouchableOpacity
-            style={styles.groupHeader}
-            onPress={() => toggleGroup(groupName)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.groupTitle}>{groupName}</Text>
-            <Ionicons
-              name={isCollapsed ? "chevron-down" : "chevron-up"}
-              size={22}
-              color="#222"
-            />
-          </TouchableOpacity>
-
-          {!isCollapsed &&
-            fields.map((field) => (
-              <Text key={field.name} style={styles.text}>
-                <Text style={styles.label}>{field.moTa}: </Text>
-                {getFieldValue(item, field) || "---"}
-              </Text>
-            ))}
-        </View>
-      );
-    })}
-  </>
-);
 
 const BottomBar = ({
   activeTab,
@@ -133,20 +87,7 @@ const BottomBar = ({
   );
 };
 
-const CenterText = ({ text }: { text: string }) => {
-  const { width } = useWindowDimensions();
-  return (
-    <View style={styles.centerContent}>
-      {text ? (
-        <RenderHtml contentWidth={width} source={{ html: text }} />
-      ) : (
-        <Text>---</Text>
-      )}
-    </View>
-  );
-};
-
-export function Details() {
+export default function Details() {
   const params = useLocalSearchParams();
   const { setTitle } = useHeader();
 
@@ -168,13 +109,12 @@ export function Details() {
   }, [params.field]);
 
   const groupedFields = useMemo(() => {
-    const groups: Record<string, Field[]> = {};
-    fieldActive.forEach((field) => {
+    return fieldActive.reduce<Record<string, Field[]>>((groups, field) => {
       const groupName = field.groupLayout || "Thông tin chung";
       if (!groups[groupName]) groups[groupName] = [];
       groups[groupName].push(field);
-    });
-    return groups;
+      return groups;
+    }, {});
   }, [fieldActive]);
 
   const toggleGroup = (groupName: string) => {
@@ -197,6 +137,7 @@ export function Details() {
         if (!id || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
 
         const response = await getDetails(nameClass, id);
+
         setItem(response.data);
       } catch (error) {
         console.error(error);
@@ -219,46 +160,16 @@ export function Details() {
     );
   }
 
-  if (!item) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <CenterText text="Không có dữ liệu" />
-      </SafeAreaView>
-    );
-  }
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "list":
-        return (
-          <ScrollView
-            contentContainerStyle={{ padding: 16, paddingBottom: 70 }}
-          >
-            <GroupList
-              groupedFields={groupedFields}
-              collapsedGroups={collapsedGroups}
-              toggleGroup={toggleGroup}
-              getFieldValue={getFieldValue}
-              item={item}
-            />
-          </ScrollView>
-        );
-      case "details":
-        return <CenterText text="Chi tiết" />;
-      case "notes":
-        return <CenterText text={item.notes} />;
-      case "history":
-        return <CenterText text="Lịch sử content" />;
-      case "attach":
-        return <CenterText text="Tệp content" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <View style={styles.container}>
-      {renderTabContent()}
+      <TabContent
+        activeTab={activeTab}
+        groupedFields={groupedFields}
+        collapsedGroups={collapsedGroups}
+        toggleGroup={toggleGroup}
+        getFieldValue={getFieldValue}
+        item={item}
+      />
       <BottomBar activeTab={activeTab} onTabPress={handleChangeTab} />
     </View>
   );

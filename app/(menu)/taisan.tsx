@@ -42,7 +42,6 @@ const DropdownItem: React.FC<DropdownProps> = ({
       onToggle(item.id);
     } else if (item.contentName_Mobile) {
       const { key, label } = splitNameClass(item.contentName_Mobile);
-
       router.push({
         pathname: "/(data)/taisan",
         params: {

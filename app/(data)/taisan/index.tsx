@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { ListContainer } from "@/app/(dataClass)/list";
 import { AddItemAsset } from "@/components/AddItemAsset";
+import ListContainer from "@/app/(dataClass)/list";
 
 export default function TaiSanScreen() {
   return (

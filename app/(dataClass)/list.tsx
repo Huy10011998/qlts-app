@@ -9,13 +9,12 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Field, getFieldValue, normalizeText } from "@/utils/helper";
+import { getFieldValue, normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
 import { useSearch } from "@/context/SearchContext";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { getFieldActive, getList, getPropertyClass } from "@/services";
-import { useLocalSearchParams } from "expo-router";
-import { CardItemProps, PropertyClass, SearchBarProps } from "@/types";
+import { CardItemProps, Field, PropertyClass, SearchBarProps } from "@/types";
 
 export function CardItem({ item, fields, icon, onPress }: CardItemProps) {
   return (
@@ -26,7 +25,7 @@ export function CardItem({ item, fields, icon, onPress }: CardItemProps) {
             (icon as keyof typeof Ionicons.glyphMap) || "document-text-outline"
           }
           size={24}
-          color="#0077CC"
+          color="#FF3333"
         />
       </View>
       <View style={styles.info}>
@@ -63,7 +62,7 @@ export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   );
 }
 
-export function ListContainer() {
+export default function ListContainer() {
   const [taisan, setTaiSan] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
   const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
@@ -77,9 +76,7 @@ export function ListContainer() {
   const { isSearchOpen } = useSearch();
   const router = useRouter();
   const { nameClass } = useLocalSearchParams<{ nameClass: string }>();
-
   const pageSize = 20;
-
   const searchInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -87,6 +84,8 @@ export function ListContainer() {
       searchInputRef.current.focus();
     }
   }, [isSearchOpen]);
+
+  // Hàm load fieldShowMobile từ AsyncStorage
 
   //  HANDLE PRESS ITEM
   const handlePress = async (item: Record<string, any>) => {
@@ -119,7 +118,11 @@ export function ListContainer() {
           const responseFieldActive = await getFieldActive(nameClass);
           const activeFields = responseFieldActive?.data || [];
           setFieldActive(activeFields);
-          setFieldShowMobile(activeFields.filter((f: any) => f.isShowMobile));
+
+          const showMobileFields = activeFields.filter(
+            (f: any) => f.isShowMobile
+          );
+          setFieldShowMobile(showMobileFields);
         }
 
         // Lấy PropertyClass nếu lần đầu
@@ -140,6 +143,7 @@ export function ListContainer() {
           [],
           []
         );
+
         const newItems = response?.data?.items || [];
         const totalItems = response?.data?.totalCount || 0;
 
@@ -164,11 +168,12 @@ export function ListContainer() {
     [fieldActive, propertyClass, skipSize, nameClass, pageSize, searchText]
   );
 
-  //  GỌI API LẦN ĐẦU
+  //  GỌI API LẦN ĐẦU HOẶC LOAD CACHE
   useEffect(() => {
-    fetchData();
+    (async () => {
+      await fetchData(); // sau đó gọi API
+    })();
     setIsFirstLoad(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // DEBOUNCE TÌM KIẾM
@@ -178,7 +183,6 @@ export function ListContainer() {
       fetchData(false);
     }, 500);
     return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   // LOAD MORE
@@ -187,6 +191,7 @@ export function ListContainer() {
       fetchData(true);
     }
   };
+
   if (isLoading) return <IsLoading />;
 
   return (

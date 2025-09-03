@@ -1,5 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import { Details } from "@/app/(dataClass)/details";
+import Details from "@/app/(dataClass)/details";
 
 export default function ChiTietScreen() {
   return (

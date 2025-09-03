@@ -76,4 +76,3 @@ export const splitNameClass = (nameClass: string) => {
     label: parts[1]?.trim() || "",
   };
 };
-export { Field };

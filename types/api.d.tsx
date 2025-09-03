@@ -1,5 +1,6 @@
 // src/types/api.d.ts
 
+import { Ionicons } from "@expo/vector-icons";
 import { Item } from "./model.d";
 
 export interface GetMenuActiveResponse {
@@ -24,9 +25,16 @@ export interface PropertyClass {
   iconMobile: string;
 }
 
-export type MenuItem = {
-  icon: React.ReactNode;
+export interface MenuItemString {
+  id: string;
   label: string;
-  notificationCount?: number;
+  icon?: keyof typeof Ionicons.glyphMap; // Dùng cho icon dạng chuỗi
+}
+
+export interface MenuItemComponent {
+  id: string;
+  label: string;
+  icon?: React.ReactNode; // Dùng cho icon là component React
   onPress?: () => void;
-};
+  notificationCount?: number;
+}
