@@ -21,21 +21,14 @@ export interface LoginResponse {
   };
 }
 
-export interface PropertyClass {
+export interface PropertyResponse {
   iconMobile: string;
 }
 
-export interface MenuItemString {
-  name: string | number | (string | number)[] | null | undefined;
+export interface MenuItemResponse {
   id: string;
+  name: string;
   label: string;
-  icon?: keyof typeof Ionicons.glyphMap; // Dùng cho icon dạng chuỗi
-}
-
-export interface MenuItemComponent {
-  id: string;
-  label: string;
-  icon?: React.ReactNode; // Dùng cho icon là component React
-  onPress?: () => void;
-  notificationCount?: number;
+  icon: keyof typeof Ionicons.glyphMap;
+  propertyReference: string; // ✅ cho phép undefined
 }

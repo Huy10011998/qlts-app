@@ -22,7 +22,7 @@ export default function Details({ children }: DetailsProps) {
   const params = useLocalSearchParams();
   const { setTitle } = useHeader();
 
-  const [activeTab, setActiveTab] = useState("list");
+  const [activeTab, setActiveTab] = useState("");
   const [collapsedGroups, setCollapsedGroups] = useState<
     Record<string, boolean>
   >({});
@@ -68,6 +68,7 @@ export default function Details({ children }: DetailsProps) {
         if (!id || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
 
         const response = await getDetails(nameClass, id);
+
         setItem(response.data);
       } catch (error) {
         console.error(error);

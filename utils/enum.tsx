@@ -11,3 +11,22 @@ export enum TypeProperty {
   Image, // 9
   Enum, // 10
 }
+
+export enum SqlOperator {
+  Equals,
+  NotEquals,
+  GreaterThan,
+  LessThan,
+  GreaterThanOrEqual,
+  LessThanOrEqual,
+  Contains,
+  StartsWith,
+  EndsWith,
+  DoesNotContain,
+  In,
+  NotIn,
+  IsNull,
+  IsNotNull,
+  IsEmpty,
+  IsNotEmpty,
+}

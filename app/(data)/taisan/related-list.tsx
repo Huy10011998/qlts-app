@@ -9,7 +9,7 @@ export default function RelaterListScreen() {
 
   return (
     <View style={styles.container}>
-      <ListContainer name={name} />
+      <ListContainer name={name} path={"related-details"} />
     </View>
   );
 }

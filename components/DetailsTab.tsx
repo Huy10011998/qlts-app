@@ -9,26 +9,26 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { MenuItemString } from "@/types";
 import { getClassReference } from "@/services/data/callApi";
 import IsLoading from "@/components/ui/IconLoading";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { MenuItemResponse } from "@/types";
 
 export default function DeTailsTab() {
   const params = useLocalSearchParams();
   const router = useRouter();
 
   const nameClass = params.nameClass as string;
-  const id = Number(params.id);
+  const idRoot = Number(params.id);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [items, setItems] = useState<MenuItemString[]>([]);
+  const [items, setItems] = useState<MenuItemResponse[]>([]);
 
   useEffect(() => {
     const fetchDetails = async () => {
       setIsLoading(true);
       try {
-        if (!id || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
+        if (!idRoot || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
 
         const response = await getClassReference(nameClass);
         const data = response?.data;
@@ -38,15 +38,15 @@ export default function DeTailsTab() {
         }
 
         setItems(
-          data.map((item: any) => {
+          data.map((item: any): MenuItemResponse => {
             const iconName = item.iconMobile as keyof typeof Ionicons.glyphMap;
+
             return {
-              id: String(item.id),
-              name: item.name || "", // <-- thêm name để truyền qua params
-              label: item.moTa || "Không có mô tả",
+              ...item, // copy hết field giống nhau (id, name…)
+              label: item.moTa ?? "Không có mô tả", // đổi tên field
               icon: Ionicons.glyphMap[iconName]
                 ? iconName
-                : ("document-text-outline" as keyof typeof Ionicons.glyphMap),
+                : "document-text-outline",
             };
           })
         );
@@ -59,18 +59,20 @@ export default function DeTailsTab() {
     };
 
     fetchDetails();
-  }, [nameClass, id]);
+  }, [nameClass, idRoot]);
 
-  const handlePress = (item: MenuItemString) => {
+  const handlePress = (item: MenuItemResponse) => {
     router.push({
-      pathname: "/(data)/taisan/related-list", // đường dẫn tới màn hình đích
+      pathname: "/(data)/taisan/related-list",
       params: {
-        name: item.name, // truyền name
+        name: item.name,
+        propertyReference: item.propertyReference,
+        idRoot: idRoot,
       },
     });
   };
 
-  const renderItem = ({ item }: { item: MenuItemString }) => (
+  const renderItem = ({ item }: { item: MenuItemResponse }) => (
     <TouchableOpacity
       style={styles.item}
       activeOpacity={0.7}

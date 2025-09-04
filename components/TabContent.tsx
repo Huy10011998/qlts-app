@@ -4,6 +4,7 @@ import { TabContentProps } from "@/types";
 import GroupList from "./GroupList";
 import CenterText from "./ThemedCenterText";
 import DeTailsTab from "./DetailsTab";
+import ListHistory from "./ListHistory";
 
 export default function TabContent({
   activeTab,
@@ -27,7 +28,7 @@ export default function TabContent({
     ),
     details: <DeTailsTab />,
     notes: <CenterText text={item.notes || "---"} />,
-    history: <CenterText text="Lịch sử content" />,
+    history: <ListHistory />,
     attach: <CenterText text="Tệp content" />,
   };
 

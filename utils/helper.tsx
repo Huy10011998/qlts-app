@@ -76,3 +76,20 @@ export const splitNameClass = (nameClass: string) => {
     label: parts[1]?.trim() || "",
   };
 };
+
+// Hàm format ngày
+export const formatDate = (dateString?: string) => {
+  if (!dateString) return "Không có";
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "Không hợp lệ";
+  }
+};

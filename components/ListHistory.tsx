@@ -17,15 +17,16 @@ import { normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
 import { useSearch } from "@/context/SearchContext";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { getFieldActive, getList, getPropertyClass } from "@/services";
+import { getFieldActive, getPropertyClass } from "@/services";
 import {
   Field,
   ListContainerProps,
   PropertyResponse,
   SearchBarProps,
 } from "@/types";
-import ListCardItem from "@/components/ListCardItem";
 import { SqlOperator, TypeProperty } from "@/utils/enum";
+import { getListHistory } from "@/services/data/callApi";
+import ListCardHistory from "./ListCardHistory";
 
 export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   const inputRef = useRef<TextInput>(null);
@@ -49,8 +50,8 @@ export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   );
 }
 
-export default function ListContainer({ name, path }: ListContainerProps) {
-  const [taisan, setTaiSan] = useState<Record<string, any>[]>([]);
+export default function ListHistory({ name }: ListContainerProps) {
+  const [lichsu, setLichsu] = useState<Record<string, any>[]>([]);
   const [fieldActive, setFieldActive] = useState<Field[]>([]);
   const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
   const [propertyClass, setPropertyClass] = useState<PropertyResponse>();
@@ -67,28 +68,28 @@ export default function ListContainer({ name, path }: ListContainerProps) {
   const params = useLocalSearchParams<{
     propertyReference: any;
     nameClass: any;
-    idRoot: any;
+    id: any;
   }>();
 
   const nameClass = name || params.nameClass;
   const reference = params.propertyReference;
-  const idRoot = params.idRoot;
+  const id = params.id;
 
   const pageSize = 20;
   const searchInputRef = useRef<TextInput>(null);
 
   const conditions = useMemo(() => {
-    return reference && idRoot
+    return reference && id
       ? [
           {
             property: reference,
             operator: SqlOperator.Equals,
-            value: idRoot,
+            value: id,
             type: TypeProperty.Int,
           },
         ]
       : [];
-  }, [reference, idRoot]);
+  }, [reference, id]);
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -99,7 +100,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
   const handlePress = async (item: Record<string, any>) => {
     try {
       router.push({
-        pathname: `/taisan/${path || "details"}` as any,
+        pathname: "/taisan/details",
         params: {
           id: item.id,
           field: JSON.stringify(fieldActive),
@@ -108,7 +109,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
       });
     } catch (error) {
       console.error(error);
-      Alert.alert("Lỗi", `Không thể tải chi tiết ${nameClass}`);
+      Alert.alert(`Lỗi", "Không thể tải chi tiết ${nameClass}`);
     } finally {
       setIsLoading(false);
     }
@@ -140,25 +141,16 @@ export default function ListContainer({ name, path }: ListContainerProps) {
 
         const currentSkip = isLoadMore ? skipSize : 0;
 
-        const response = await getList(
-          nameClass,
-          "",
-          pageSize,
-          currentSkip,
-          searchText,
-          fieldActive,
-          conditions,
-          []
-        );
+        const response = await getListHistory(id, nameClass);
 
-        const newItems: Record<string, any>[] = response?.data?.items || [];
-        const totalItems = response?.data?.totalCount || 0;
+        const newItems: Record<string, any>[] = response?.data || [];
+        const totalItems = newItems.length;
 
         if (isLoadMore) {
-          setTaiSan((prev) => [...prev, ...newItems]);
+          setLichsu((prev) => [...prev, ...newItems]);
           setSkipSize(currentSkip + pageSize);
         } else {
-          setTaiSan(newItems);
+          setLichsu(newItems);
           setSkipSize(pageSize);
         }
 
@@ -166,13 +158,13 @@ export default function ListContainer({ name, path }: ListContainerProps) {
       } catch (error) {
         if (__DEV__) console.error("API error:", error);
         Alert.alert("Lỗi", "Không thể tải dữ liệu.");
-        if (!isLoadMore) setTaiSan([]);
+        if (!isLoadMore) setLichsu([]);
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
       }
     },
-    [nameClass, fieldActive, propertyClass, skipSize, searchText, conditions]
+    [nameClass, fieldActive.length, propertyClass, skipSize, id]
   );
 
   useEffect(() => {
@@ -192,7 +184,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
   }, [searchText, nameClass]);
 
   const handleLoadMore = () => {
-    if (taisan.length < total && !isLoadingMore) {
+    if (lichsu.length < total && !isLoadingMore) {
       fetchData(true);
     }
   };
@@ -209,14 +201,16 @@ export default function ListContainer({ name, path }: ListContainerProps) {
         />
       )}
       <FlatList
-        data={taisan}
+        data={lichsu}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => (
-          <ListCardItem
+          <ListCardHistory
             item={item}
             fields={fieldShowMobile}
             icon={propertyClass?.iconMobile || ""}
-            onPress={handlePress}
+            onPress={() => {
+              console.log("hihihehe");
+            }}
           />
         )}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -226,7 +220,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
         ListHeaderComponent={
           <View style={styles.stickyHeader}>
             <Text style={styles.header}>
-              Tổng số tài sản: {total} (Đã tải: {taisan.length})
+              Tổng số lịch sử: {total} (Đã tải: {lichsu.length})
             </Text>
           </View>
         }

@@ -2,7 +2,6 @@
 
 import React, { PropsWithChildren, ReactElement } from "react";
 import { Field, Item } from "./model.d";
-import { MenuItemComponent } from "./api.d";
 import { Ionicons } from "@expo/vector-icons";
 import { TextInputProps, TextProps, ViewProps } from "react-native";
 import { getFieldValue } from "@/utils/helper";
@@ -128,4 +127,13 @@ export interface DetailsProps {
 
 export interface ListContainerProps {
   name?: string; // name có thể được truyền từ bên ngoài
+  path?: string;
+}
+
+export interface MenuItemComponent {
+  id: string;
+  label: string;
+  icon?: React.ReactNode; // Dùng cho icon là component React
+  onPress?: () => void;
+  notificationCount?: number;
 }
