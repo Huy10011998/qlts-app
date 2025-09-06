@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { AddItemAsset } from "@/components/AddItemAsset";
 import ListContainer from "@/app/(dataClass)/list";
 
-export default function TaiSanScreen() {
+export default function DanhSachScreen() {
   return (
     <View style={styles.container}>
       <ListContainer />

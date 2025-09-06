@@ -1,10 +1,10 @@
 import React, { JSX } from "react";
 import { ScrollView } from "react-native";
 import { TabContentProps } from "@/types";
-import GroupList from "./GroupList";
-import CenterText from "./ThemedCenterText";
-import DeTailsTab from "./DetailsTab";
-import ListHistory from "./ListHistory";
+import GroupList from "../GroupList";
+import CenterText from "../theme/ThemedCenterText";
+import DeTailsTab from "../DetailsTab";
+import ListHistory from "../list/ListHistory";
 
 export default function TabContent({
   activeTab,
@@ -13,6 +13,8 @@ export default function TabContent({
   toggleGroup,
   getFieldValue,
   item,
+  previousItem,
+  isFieldChanged,
 }: TabContentProps) {
   const tabContentMap: Record<string, JSX.Element> = {
     list: (
@@ -23,11 +25,13 @@ export default function TabContent({
           toggleGroup={toggleGroup}
           getFieldValue={getFieldValue}
           item={item}
+          previousItem={previousItem}
+          isFieldChanged={isFieldChanged}
         />
       </ScrollView>
     ),
     details: <DeTailsTab />,
-    notes: <CenterText text={item.notes || "---"} />,
+    notes: <CenterText text={item?.notes ?? "---"} />,
     history: <ListHistory />,
     attach: <CenterText text="Tệp content" />,
   };

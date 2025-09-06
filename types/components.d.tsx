@@ -86,8 +86,14 @@ export interface TabContentProps {
   groupedFields: Record<string, Field[]>;
   collapsedGroups: Record<string, boolean>;
   toggleGroup: (groupName: string) => void;
-  getFieldValue: (item: any, field: Field) => string;
+  getFieldValue: (item: Record<string, any>, field: Field) => string;
   item: any;
+  previousItem?: any; // 🔥 optional
+  isFieldChanged?: (
+    field: Field,
+    currentItem: any,
+    previousItem: any
+  ) => boolean; // 🔥 optional
 }
 
 export interface CenterTextProps {
@@ -98,8 +104,14 @@ export interface GroupListProps {
   groupedFields: Record<string, Field[]>;
   collapsedGroups: Record<string, boolean>;
   toggleGroup: (groupName: string) => void;
-  getFieldValue: (item: any, field: Field) => string;
+  getFieldValue: (item: Record<string, any>, field: Field) => string;
   item: any;
+  previousItem?: any; // 🔥 optional
+  isFieldChanged?: (
+    field: Field,
+    currentItem: any,
+    previousItem: any
+  ) => boolean; // 🔥 optional
 }
 
 export interface BottomBarProps {
@@ -121,7 +133,26 @@ export interface DetailsProps {
     toggleGroup: (groupName: string) => void;
     item: any;
     getFieldValue: typeof getFieldValue;
-    TAB_ITEMS: typeof TAB_ITEMS;
+    TAB_ITEMS?: typeof TAB_ITEMS;
+  }) => React.ReactNode;
+}
+
+export interface DetailsHistoryProps {
+  children: (props: {
+    activeTab: string;
+    setActiveTab: (tabKey: string, label: string) => void;
+    groupedFields: Record<string, Field[]>;
+    collapsedGroups: Record<string, boolean>;
+    toggleGroup: (groupName: string) => void;
+    item: any;
+    getFieldValue: typeof getFieldValue;
+    TAB_ITEMS?: typeof TAB_ITEMS;
+    previousItem: any;
+    isFieldChanged: (
+      field: Field,
+      currentItem: any,
+      previousItem: any
+    ) => boolean;
   }) => React.ReactNode;
 }
 

@@ -9,6 +9,8 @@ export default function GroupList({
   toggleGroup,
   getFieldValue,
   item,
+  previousItem,
+  isFieldChanged,
 }: GroupListProps) {
   return (
     <>
@@ -30,12 +32,31 @@ export default function GroupList({
             </TouchableOpacity>
 
             {!isCollapsed &&
-              fields.map((field) => (
-                <Text key={field.name} style={styles.text}>
-                  <Text style={styles.label}>{field.moTa}: </Text>
-                  {getFieldValue(item, field) || "---"}
-                </Text>
-              ))}
+              fields.map((field) => {
+                const currentValue = getFieldValue(item, field) || "---";
+                const prevValue =
+                  previousItem && getFieldValue(previousItem, field);
+
+                const changed =
+                  isFieldChanged && previousItem
+                    ? isFieldChanged(field, item, previousItem)
+                    : false;
+
+                return (
+                  <Text
+                    key={field.name}
+                    style={[
+                      styles.text,
+                      changed && { color: "red", fontWeight: "600" },
+                    ]}
+                  >
+                    <Text style={styles.label}>{field.moTa}: </Text>
+                    {changed
+                      ? `${prevValue || "---"}  ->  ${currentValue || "---"}`
+                      : currentValue}
+                  </Text>
+                );
+              })}
           </View>
         );
       })}

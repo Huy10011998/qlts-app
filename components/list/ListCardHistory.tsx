@@ -4,27 +4,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { CardItemProps } from "@/types";
 import { formatDate } from "@/utils/helper";
 
-export default function ListCardHistory({
-  item,
-  icon,
-  onPress,
-}: CardItemProps) {
-  const ngayTaoCapNhat = item?.log_EndDate || item?.log_StartDate;
-  const user = item?.log_ID_User_MoTa || "Không rõ";
+export default function ListCardHistory({ item, onPress }: CardItemProps) {
+  const ngayTaoCapNhat = item?.log_StartDate;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(item)}>
+    <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.avatar}>
         <Ionicons name="time-outline" size={24} color="#FF3333" />
       </View>
+
       <View style={styles.info}>
         <Text style={styles.text}>
           <Text style={styles.label}>Ngày tạo/cập nhật: </Text>
-          {formatDate(ngayTaoCapNhat)}
+          <Text>{formatDate(ngayTaoCapNhat)}</Text>
         </Text>
+
         <Text style={styles.text}>
           <Text style={styles.label}>User: </Text>
-          {user}
+          <Text>{item?.log_ID_User_MoTa}</Text>
         </Text>
       </View>
     </TouchableOpacity>

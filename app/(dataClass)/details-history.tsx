@@ -2,22 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, SafeAreaView, Alert } from "react-native";
 import { getFieldValue } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
-import { DetailsProps, Field } from "@/types";
-import { getDetails } from "@/services/data/callApi";
+import { DetailsHistoryProps, Field } from "@/types";
+import { getDetailsHistory } from "@/services/data/callApi";
 import { useParams } from "@/hooks/useParams";
 
-export const TAB_ITEMS = [
-  { key: "list", label: "Thông tin", icon: "document-text-outline" },
-  { key: "details", label: "Chi tiết", icon: "menu-outline" },
-  { key: "notes", label: "Note", icon: "document-attach-outline" },
-  { key: "history", label: "Lịch sử", icon: "time-outline" },
-  { key: "attach", label: "Tệp", icon: "attach-outline" },
-] as const;
-
-export type TabItem = (typeof TAB_ITEMS)[number];
-
-export default function Details({ children }: DetailsProps) {
-  const { id, nameClass, field } = useParams();
+export default function DetailsHistory({ children }: DetailsHistoryProps) {
+  const { id, id_previous, nameClass, field } = useParams();
 
   const [activeTab, setActiveTab] = useState("list");
   const [collapsedGroups, setCollapsedGroups] = useState<
@@ -25,7 +15,9 @@ export default function Details({ children }: DetailsProps) {
   >({});
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState<any>(null);
+  const [previousItem, setPreviousItem] = useState<any>(null);
 
+  // parse fieldActive
   const fieldActive: Field[] = useMemo(() => {
     try {
       return field ? JSON.parse(field as string) : [];
@@ -34,6 +26,7 @@ export default function Details({ children }: DetailsProps) {
     }
   }, [field]);
 
+  // group theo groupLayout
   const groupedFields = useMemo(() => {
     return fieldActive.reduce<Record<string, Field[]>>((groups, field) => {
       const groupName = field.groupLayout || "Thông tin chung";
@@ -60,11 +53,20 @@ export default function Details({ children }: DetailsProps) {
       try {
         if (!id || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
 
-        const response = await getDetails(nameClass, id);
+        // bản ghi hiện tại
+        const response = await getDetailsHistory(nameClass, id);
         setItem(response.data);
+
+        // bản ghi trước đó
+        if (id_previous) {
+          const prevResponse = await getDetailsHistory(nameClass, id_previous);
+          setPreviousItem(prevResponse.data);
+        } else {
+          setPreviousItem(null);
+        }
       } catch (error) {
         console.error(error);
-        Alert.alert("Lỗi", `Không thể tải chi tiết ${nameClass}`);
+        Alert.alert("Lỗi", `Không thể tải chi tiết lịch sử ${nameClass}`);
       } finally {
         setIsLoading(false);
       }
@@ -72,7 +74,21 @@ export default function Details({ children }: DetailsProps) {
 
     setActiveTab("list");
     fetchDetails();
-  }, [id, nameClass]);
+  }, [id, id_previous, nameClass]);
+
+  // so sánh field
+  const isFieldChanged = (
+    field: Field,
+    currentItem: any,
+    previousItem: any
+  ): boolean => {
+    if (!previousItem) return false;
+
+    const currentValue = getFieldValue(currentItem, field);
+    const prevValue = getFieldValue(previousItem, field);
+
+    return String(currentValue ?? "") !== String(prevValue ?? "");
+  };
 
   if (isLoading) {
     return (
@@ -91,8 +107,9 @@ export default function Details({ children }: DetailsProps) {
         collapsedGroups,
         toggleGroup,
         item,
+        previousItem,
         getFieldValue,
-        TAB_ITEMS,
+        isFieldChanged,
       })}
     </View>
   );

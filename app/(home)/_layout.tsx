@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import TabCustom from "@/components/TabOptions";
+import TabCustom from "@/components/tabs/TabOptions";
 
 export default function TabLayout() {
   return (

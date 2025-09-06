@@ -85,11 +85,26 @@ export const formatDate = (dateString?: string) => {
     return date.toLocaleString("vi-VN", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit", // ✅ thêm giây
     });
   } catch {
     return "Không hợp lệ";
   }
 };
+
+// Chuẩn hóa text để so sánh
+export function normalizeValue(value?: any): string {
+  if (value === null || value === undefined) return "";
+  return String(value) // ✅ ép sang string để tránh lỗi .replace
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}

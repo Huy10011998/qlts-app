@@ -11,15 +11,14 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { getClassReference } from "@/services/data/callApi";
 import IsLoading from "@/components/ui/IconLoading";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { MenuItemResponse } from "@/types";
+import { useParams } from "@/hooks/useParams";
 
 export default function DeTailsTab() {
-  const params = useLocalSearchParams();
   const router = useRouter();
 
-  const nameClass = params.nameClass as string;
-  const idRoot = Number(params.id);
+  const { id, nameClass } = useParams();
 
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<MenuItemResponse[]>([]);
@@ -28,7 +27,7 @@ export default function DeTailsTab() {
     const fetchDetails = async () => {
       setIsLoading(true);
       try {
-        if (!idRoot || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
+        if (!id || !nameClass) throw new Error("Thiếu ID hoặc nameClass");
 
         const response = await getClassReference(nameClass);
         const data = response?.data;
@@ -42,8 +41,8 @@ export default function DeTailsTab() {
             const iconName = item.iconMobile as keyof typeof Ionicons.glyphMap;
 
             return {
-              ...item, // copy hết field giống nhau (id, name…)
-              label: item.moTa ?? "Không có mô tả", // đổi tên field
+              ...item,
+              label: item.moTa ?? "Không có mô tả",
               icon: Ionicons.glyphMap[iconName]
                 ? iconName
                 : "document-text-outline",
@@ -59,7 +58,7 @@ export default function DeTailsTab() {
     };
 
     fetchDetails();
-  }, [nameClass, idRoot]);
+  }, [nameClass, id]);
 
   const handlePress = (item: MenuItemResponse) => {
     router.push({
@@ -67,7 +66,7 @@ export default function DeTailsTab() {
       params: {
         name: item.name,
         propertyReference: item.propertyReference,
-        idRoot: idRoot,
+        idRoot: id, // giữ nguyên string
       },
     });
   };
@@ -100,7 +99,7 @@ export default function DeTailsTab() {
     <View style={styles.container}>
       <FlatList
         data={items}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={

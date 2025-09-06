@@ -1,11 +1,10 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import ListContainer from "@/app/(dataClass)/list";
-import { useLocalSearchParams } from "expo-router";
+import { useParams } from "@/hooks/useParams";
 
 export default function RelaterListScreen() {
-  const params = useLocalSearchParams<{ name: string }>();
-  const name = params.name;
+  const { name } = useParams();
 
   return (
     <View style={styles.container}>

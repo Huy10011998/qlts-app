@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import Details from "@/app/(dataClass)/details";
-import TabContent from "@/components/TabContent";
-import BottomBarDetails from "@/components/BottomDetails";
+import TabContent from "@/components/tabs/TabContent";
+import BottomBarDetails from "@/components/bottom/BottomDetails";
 
 export default function ChiTietScreen() {
   return (
@@ -30,7 +30,7 @@ export default function ChiTietScreen() {
             <BottomBarDetails
               activeTab={activeTab}
               onTabPress={setActiveTab}
-              tabs={TAB_ITEMS}
+              tabs={TAB_ITEMS ?? []}
             />
           </>
         )}

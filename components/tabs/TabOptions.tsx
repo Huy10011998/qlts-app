@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import CustomHeader from "@/components/HeaderOptions";
+import CustomHeader from "@/components/header/HeaderOptions";
 import { TabCustomProps } from "@/types";
 
 export default function TabCustom({

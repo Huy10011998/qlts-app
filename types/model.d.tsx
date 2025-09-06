@@ -1,5 +1,3 @@
-// src/types/models.d.ts
-
 // Loại dữ liệu điều kiện
 export type Conditions = {
   property: string;

@@ -1,7 +1,7 @@
 import { useAuth } from "@/components/auth/AuthProvider";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedTextInput } from "@/components/ThemedTextInput";
-import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/theme/ThemedText";
+import { ThemedTextInput } from "@/components/theme/ThemedTextInput";
+import { ThemedView } from "@/components/theme/ThemedView";
 import IsLoading from "@/components/ui/IconLoading";
 import { loginApi } from "@/services";
 import { useFocusEffect } from "@react-navigation/native";

@@ -1,57 +1,46 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { HeaderProvider, useHeader } from "@/context/HeaderContext";
-import {
-  defaultHeaderOptions,
-  HeaderRightButton,
-} from "@/components/HeaderOptions";
-import { SearchProvider } from "@/context/SearchContext";
+import { defaultHeaderOptions } from "@/components/header/HeaderOptions";
 
-function TaiSanScreens() {
-  const { title } = useHeader(); // bây giờ hook nằm bên trong provider
+export default function TaiSanScreens() {
   const { titleHeader } = useLocalSearchParams<{ titleHeader?: string }>();
 
   return (
-    <SearchProvider>
-      <Stack>
-        <Stack.Screen
-          name="list"
-          options={{
-            ...defaultHeaderOptions,
-            title: titleHeader || "Tài sản",
-            headerRight: () => <HeaderRightButton />,
-          }}
-        />
-        <Stack.Screen
-          name="details"
-          options={{
-            ...defaultHeaderOptions,
-            title: title || "Chi tiết",
-          }}
-        />
-        <Stack.Screen
-          name="related-list"
-          options={{
-            ...defaultHeaderOptions,
-            title: titleHeader || "Tài sản",
-            headerRight: () => <HeaderRightButton />,
-          }}
-        />
-        <Stack.Screen
-          name="related-details"
-          options={{
-            ...defaultHeaderOptions,
-            title: "Chi tiết",
-          }}
-        />
-      </Stack>
-    </SearchProvider>
-  );
-}
-
-export default function TaiSanLayout() {
-  return (
-    <HeaderProvider>
-      <TaiSanScreens />
-    </HeaderProvider>
+    <Stack>
+      <Stack.Screen
+        name="list"
+        options={{
+          ...defaultHeaderOptions,
+          title: titleHeader || "Tài sản",
+        }}
+      />
+      <Stack.Screen
+        name="details"
+        options={{
+          ...defaultHeaderOptions,
+          title: "Chi tiết",
+        }}
+      />
+      <Stack.Screen
+        name="related-list"
+        options={{
+          ...defaultHeaderOptions,
+          title: titleHeader || "Tài sản",
+        }}
+      />
+      <Stack.Screen
+        name="related-details"
+        options={{
+          ...defaultHeaderOptions,
+          title: "Chi tiết",
+        }}
+      />
+      <Stack.Screen
+        name="related-details-history"
+        options={{
+          ...defaultHeaderOptions,
+          title: "Chi tiết",
+        }}
+      />
+    </Stack>
   );
 }

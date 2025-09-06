@@ -15,8 +15,7 @@ import {
 } from "react-native";
 import { normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
-import { useSearch } from "@/context/SearchContext";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { getFieldActive, getList, getPropertyClass } from "@/services";
 import {
   Field,
@@ -24,8 +23,9 @@ import {
   PropertyResponse,
   SearchBarProps,
 } from "@/types";
-import ListCardItem from "@/components/ListCardItem";
+import ListCardItem from "@/components/list/ListCardItem";
 import { SqlOperator, TypeProperty } from "@/utils/enum";
+import { useParams } from "@/hooks/useParams";
 
 export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   const inputRef = useRef<TextInput>(null);
@@ -61,47 +61,34 @@ export default function ListContainer({ name, path }: ListContainerProps) {
   const [searchText, setSearchText] = useState("");
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  const { isSearchOpen } = useSearch();
   const router = useRouter();
 
-  const params = useLocalSearchParams<{
-    propertyReference: any;
-    nameClass: any;
-    idRoot: any;
-  }>();
+  const { idRoot, nameClass: paramNameClass, propertyReference } = useParams();
 
-  const nameClass = name || params.nameClass;
-  const reference = params.propertyReference;
-  const idRoot = params.idRoot;
+  const nameClass = name || paramNameClass;
 
   const pageSize = 20;
   const searchInputRef = useRef<TextInput>(null);
 
   const conditions = useMemo(() => {
-    return reference && idRoot
+    return propertyReference && idRoot
       ? [
           {
-            property: reference,
+            property: propertyReference,
             operator: SqlOperator.Equals,
-            value: idRoot,
+            value: String(idRoot),
             type: TypeProperty.Int,
           },
         ]
       : [];
-  }, [reference, idRoot]);
-
-  useEffect(() => {
-    if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchOpen]);
+  }, [propertyReference, idRoot]);
 
   const handlePress = async (item: Record<string, any>) => {
     try {
       router.push({
         pathname: `/taisan/${path || "details"}` as any,
         params: {
-          id: item.id,
+          id: String(item.id),
           field: JSON.stringify(fieldActive),
           nameClass: nameClass,
         },
@@ -201,16 +188,16 @@ export default function ListContainer({ name, path }: ListContainerProps) {
 
   return (
     <View>
-      {isSearchOpen && (
+      {/* {isSearchOpen && (
         <SearchBar
           visible={true}
           value={searchText}
           onChange={(text) => setSearchText(normalizeText(text))}
         />
-      )}
+      )} */}
       <FlatList
         data={taisan}
-        keyExtractor={(_, index) => index.toString()}
+        keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <ListCardItem
             item={item}

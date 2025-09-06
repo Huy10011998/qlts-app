@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import Details from "@/app/(dataClass)/details";
-import TabContent from "@/components/TabContent";
+import TabContent from "@/components/tabs/TabContent";
 
 export default function RelatedDeTailsScreen() {
   return (

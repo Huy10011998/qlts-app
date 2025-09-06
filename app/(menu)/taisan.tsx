@@ -18,7 +18,6 @@ import { useSearch } from "@/context/SearchContext";
 import IsLoading from "@/components/ui/IconLoading";
 import { DropdownProps, GetMenuActiveResponse, Item } from "@/types";
 
-// Bật LayoutAnimation cho Android
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -99,7 +98,7 @@ const DropdownItem: React.FC<DropdownProps> = ({
   );
 };
 
-export default function TaiSanScreen() {
+export default function MenuScreen() {
   const [data, setData] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");

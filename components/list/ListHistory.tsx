@@ -15,8 +15,7 @@ import {
 } from "react-native";
 import { normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
-import { useSearch } from "@/context/SearchContext";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { getFieldActive, getPropertyClass } from "@/services";
 import {
   Field,
@@ -27,6 +26,8 @@ import {
 import { SqlOperator, TypeProperty } from "@/utils/enum";
 import { getListHistory } from "@/services/data/callApi";
 import ListCardHistory from "./ListCardHistory";
+import { useParams } from "@/hooks/useParams";
+import orderBy from "lodash/orderBy";
 
 export function SearchBar({ visible, value, onChange }: SearchBarProps) {
   const inputRef = useRef<TextInput>(null);
@@ -62,54 +63,46 @@ export default function ListHistory({ name }: ListContainerProps) {
   const [searchText, setSearchText] = useState("");
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  const { isSearchOpen } = useSearch();
   const router = useRouter();
 
-  const params = useLocalSearchParams<{
-    propertyReference: any;
-    nameClass: any;
-    id: any;
-  }>();
-
-  const nameClass = name || params.nameClass;
-  const reference = params.propertyReference;
-  const id = params.id;
+  const { id, nameClass: paramNameClass, propertyReference } = useParams();
+  const nameClass = name || paramNameClass;
 
   const pageSize = 20;
+
   const searchInputRef = useRef<TextInput>(null);
 
   const conditions = useMemo(() => {
-    return reference && id
+    return propertyReference && id
       ? [
           {
-            property: reference,
+            property: propertyReference,
             operator: SqlOperator.Equals,
             value: id,
             type: TypeProperty.Int,
           },
         ]
       : [];
-  }, [reference, id]);
+  }, [propertyReference, id]);
 
-  useEffect(() => {
-    if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchOpen]);
+  const handlePress = async (item: Record<string, any>, index: number) => {
+    const currentIndex = lichsu.findIndex((x) => x.id === item.id);
+    const id_previous =
+      currentIndex < lichsu.length - 1 ? lichsu[currentIndex + 1].id : null;
 
-  const handlePress = async (item: Record<string, any>) => {
     try {
       router.push({
-        pathname: "/taisan/details",
+        pathname: "/taisan/related-details-history",
         params: {
           id: item.id,
+          id_previous: id_previous,
           field: JSON.stringify(fieldActive),
           nameClass: nameClass,
         },
       });
     } catch (error) {
       console.error(error);
-      Alert.alert(`Lỗi", "Không thể tải chi tiết ${nameClass}`);
+      Alert.alert("Lỗi", `Không thể tải chi tiết ${nameClass}`);
     } finally {
       setIsLoading(false);
     }
@@ -117,12 +110,13 @@ export default function ListHistory({ name }: ListContainerProps) {
 
   const fetchData = useCallback(
     async (isLoadMore = false) => {
-      if (!nameClass) return;
+      if (!nameClass || !id) return;
 
       if (isLoadMore) setIsLoadingMore(true);
       else setIsLoading(true);
 
       try {
+        // Lấy field nếu lần đầu load
         if (!isLoadMore && fieldActive.length === 0) {
           const responseFieldActive = await getFieldActive(nameClass);
           const activeFields = responseFieldActive?.data || [];
@@ -141,9 +135,23 @@ export default function ListHistory({ name }: ListContainerProps) {
 
         const currentSkip = isLoadMore ? skipSize : 0;
 
+        // Lấy dữ liệu từ API
         const response = await getListHistory(id, nameClass);
+        let newItems: Record<string, any>[] = response?.data || [];
 
-        const newItems: Record<string, any>[] = response?.data || [];
+        // Filter theo searchText nếu có
+        if (searchText.trim() !== "") {
+          const normalizedSearch = searchText.toLowerCase();
+          newItems = newItems.filter((item) =>
+            Object.values(item).some((value) =>
+              String(value).toLowerCase().includes(normalizedSearch)
+            )
+          );
+        }
+
+        // Sắp xếp theo log_StartDate DESC
+        newItems = orderBy(newItems, ["log_StartDate"], ["desc"]);
+
         const totalItems = newItems.length;
 
         if (isLoadMore) {
@@ -164,17 +172,19 @@ export default function ListHistory({ name }: ListContainerProps) {
         setIsLoadingMore(false);
       }
     },
-    [nameClass, fieldActive.length, propertyClass, skipSize, id]
+    [nameClass, fieldActive.length, propertyClass, skipSize, id, searchText]
   );
 
+  // Load data lần đầu
   useEffect(() => {
-    if (!nameClass) return;
+    if (!nameClass || !id) return;
     (async () => {
       await fetchData();
     })();
     setIsFirstLoad(false);
-  }, [nameClass]);
+  }, [nameClass, id]);
 
+  // Search debounce 500ms
   useEffect(() => {
     if (isFirstLoad || !nameClass) return;
     const timeout = setTimeout(() => {
@@ -193,24 +203,15 @@ export default function ListHistory({ name }: ListContainerProps) {
 
   return (
     <View>
-      {isSearchOpen && (
-        <SearchBar
-          visible={true}
-          value={searchText}
-          onChange={(text) => setSearchText(normalizeText(text))}
-        />
-      )}
       <FlatList
         data={lichsu}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => (
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item, index }) => (
           <ListCardHistory
             item={item}
             fields={fieldShowMobile}
             icon={propertyClass?.iconMobile || ""}
-            onPress={() => {
-              console.log("hihihehe");
-            }}
+            onPress={() => handlePress(item, index)}
           />
         )}
         contentContainerStyle={{ paddingBottom: 100 }}

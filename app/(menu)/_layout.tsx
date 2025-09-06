@@ -1,16 +1,7 @@
 import { Stack } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SearchProvider, useSearch } from "@/context/SearchContext";
-
-function HeaderRightButton() {
-  const { toggleSearch } = useSearch();
-  return (
-    <TouchableOpacity onPress={toggleSearch} style={{ paddingHorizontal: 10 }}>
-      <Ionicons name="search" size={24} color="#fff" />
-    </TouchableOpacity>
-  );
-}
+import { SearchProvider } from "@/context/SearchContext";
 
 export default function MenuLayout() {
   return (
@@ -31,7 +22,6 @@ export default function MenuLayout() {
                 <Ionicons name="arrow-back" size={24} color="#fff" />
               </TouchableOpacity>
             ),
-            headerRight: () => <HeaderRightButton />,
           })}
         />
       </Stack>

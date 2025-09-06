@@ -1,7 +1,6 @@
 import React from "react";
 import { Image, StyleSheet, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useSearch } from "@/context/SearchContext";
 import { NavigationProp } from "@react-navigation/native";
 import { Stack, useNavigation } from "expo-router";
 
@@ -9,7 +8,7 @@ export default function CustomHeader() {
   return (
     <View style={styles.headerContainer}>
       <Image
-        source={require("../assets/images/logo-cholimex.jpg")}
+        source={require("../../assets/images/logo-cholimex.jpg")}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -27,16 +26,6 @@ export default function CustomHeader() {
         </TouchableOpacity>
       </View> */}
     </View>
-  );
-}
-
-// Nút tìm kiếm bên phải
-export function HeaderRightButton() {
-  const { toggleSearch } = useSearch();
-  return (
-    <TouchableOpacity onPress={toggleSearch} style={{ paddingHorizontal: 10 }}>
-      <Ionicons name="search" size={24} color="#fff" />
-    </TouchableOpacity>
   );
 }
 
