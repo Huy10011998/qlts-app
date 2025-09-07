@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import Details from "@/app/(dataClass)/details";
-import TabContent from "@/components/tabs/TabContent";
+import TabContent from "@/components/tabs/TabDetails";
 import BottomBarDetails from "@/components/bottom/BottomDetails";
 
 export default function ChiTietScreen() {

@@ -12,7 +12,7 @@ import React, {
 import { useRouter } from "expo-router";
 import { AuthContextType, JwtPayload } from "@/types";
 
-// ================= CONTEXT =================
+// Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
@@ -21,7 +21,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
   const [token, setTokenState] = useState<string | null>(null);
 
-  // ---------- Set Access Token ----------
+  // Set Access Token
   const setToken = async (value: string | null) => {
     if (value) {
       await AsyncStorage.setItem("token", value);
@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setTokenState(value); // cập nhật state
   };
 
-  // ---------- Set Refresh Token ----------
+  // Set Refresh Token
   const setRefreshToken = async (refreshToken: string | null) => {
     if (refreshToken) {
       await AsyncStorage.setItem("refreshToken", refreshToken);
@@ -40,14 +40,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // ---------- Logout ----------
+  // Logout
   const logout = async () => {
     await AsyncStorage.multiRemove(["token", "refreshToken"]);
     setTokenState(null);
     router.replace("/");
   };
 
-  // ---------- Lấy token hợp lệ khi app khởi động ----------
+  // Lấy token hợp lệ khi app khởi động
   useEffect(() => {
     (async () => {
       const validToken = await getValidToken();
@@ -66,14 +66,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-// ================= HOOK =================
+// HOOK
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth phải được sử dụng trong AuthProvider");
   return context;
 };
 
-// ================= TOKEN UTILS =================
+// TOKEN UTILS
 export const isTokenExpired = (token: string | null | undefined): boolean => {
   if (!token) return true;
   try {
@@ -105,7 +105,7 @@ export const getValidToken = async (): Promise<string | null> => {
   return await refreshTokenPair(refreshToken);
 };
 
-// ================= REFRESH TOKEN =================
+// REFRESH TOKEN
 const refreshTokenPair = async (
   refreshToken: string
 ): Promise<string | null> => {
@@ -145,13 +145,13 @@ const refreshTokenPair = async (
   }
 };
 
-// ================= AXIOS CONFIG =================
+//  AXIOS CONFIG
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json;charset=UTF-8" },
 });
 
-// ---------- Refresh Queue ----------
+// Refresh Queue
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
@@ -160,7 +160,7 @@ const notifySubscribers = (newToken: string) => {
   refreshSubscribers = [];
 };
 
-// ---------- Request Interceptor ----------
+//  Request Interceptor
 api.interceptors.request.use(async (config) => {
   const accessToken = await getValidToken();
   if (accessToken) {
@@ -169,7 +169,7 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// ---------- Response Interceptor ----------
+//  Response Interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {

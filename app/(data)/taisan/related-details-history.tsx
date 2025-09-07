@@ -1,5 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import TabContent from "@/components/tabs/TabContent";
+import TabContent from "@/components/tabs/TabDetails";
 import DetailsHistory from "@/app/(dataClass)/details-history";
 
 export default function RelatedDeTailsHistoryScreen() {
