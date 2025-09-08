@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +7,6 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import { normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
 import { useRouter } from "expo-router";
 import { getFieldActive, getPropertyClass } from "@/services";
@@ -23,7 +16,6 @@ import {
   PropertyResponse,
   SearchInputProps,
 } from "@/types";
-import { SqlOperator, TypeProperty } from "@/utils/enum";
 import { getListHistory } from "@/services/data/callApi";
 import { useParams } from "@/hooks/useParams";
 import orderBy from "lodash/orderBy";
@@ -60,30 +52,13 @@ export default function ListHistory({ name }: ListContainerProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [skipSize, setSkipSize] = useState(0);
   const [total, setTotal] = useState(0);
-  const [searchText, setSearchText] = useState("");
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const router = useRouter();
 
-  const { id, nameClass: paramNameClass, propertyReference } = useParams();
+  const { id, nameClass: paramNameClass } = useParams();
   const nameClass = name || paramNameClass;
 
   const pageSize = 20;
-
-  const searchInputRef = useRef<TextInput>(null);
-
-  const conditions = useMemo(() => {
-    return propertyReference && id
-      ? [
-          {
-            property: propertyReference,
-            operator: SqlOperator.Equals,
-            value: id,
-            type: TypeProperty.Int,
-          },
-        ]
-      : [];
-  }, [propertyReference, id]);
 
   const handlePress = async (item: Record<string, any>, index: number) => {
     const currentIndex = lichsu.findIndex((x) => x.id === item.id);
@@ -139,16 +114,6 @@ export default function ListHistory({ name }: ListContainerProps) {
         const response = await getListHistory(id, nameClass);
         let newItems: Record<string, any>[] = response?.data || [];
 
-        // Filter theo searchText nếu có
-        if (searchText.trim() !== "") {
-          const normalizedSearch = searchText.toLowerCase();
-          newItems = newItems.filter((item) =>
-            Object.values(item).some((value) =>
-              String(value).toLowerCase().includes(normalizedSearch)
-            )
-          );
-        }
-
         // Sắp xếp theo log_StartDate DESC
         newItems = orderBy(newItems, ["log_StartDate"], ["desc"]);
 
@@ -172,26 +137,15 @@ export default function ListHistory({ name }: ListContainerProps) {
         setIsLoadingMore(false);
       }
     },
-    [nameClass, fieldActive.length, propertyClass, skipSize, id, searchText]
+    [nameClass, fieldActive.length, propertyClass, skipSize, id]
   );
 
-  // Load data lần đầu
   useEffect(() => {
     if (!nameClass || !id) return;
     (async () => {
       await fetchData();
     })();
-    setIsFirstLoad(false);
-  }, [nameClass, id]);
-
-  // Search debounce 500ms
-  useEffect(() => {
-    if (isFirstLoad || !nameClass) return;
-    const timeout = setTimeout(() => {
-      fetchData(false);
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [searchText, nameClass]);
+  }, [nameClass, id, fetchData]);
 
   const handleLoadMore = () => {
     if (lichsu.length < total && !isLoadingMore) {

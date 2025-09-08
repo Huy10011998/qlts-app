@@ -1,5 +1,7 @@
 export const BASE_URL = "https://api.cholimexfood.com.vn/api";
 
+export const BASE_URL_PDF = "https://api.cholimexfood.com.vn/";
+
 export const API_ENDPOINTS = {
   GET_MENU_ACTIVE: `${BASE_URL}/Common/get-menu-active`,
   LOGIN: `${BASE_URL}/Authorization/login`,

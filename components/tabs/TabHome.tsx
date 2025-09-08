@@ -3,23 +3,19 @@ import { Platform, View, StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { HapticTab } from "@/components/HapticTab";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { TabCustomProps } from "@/types";
 import HeaderHome from "../header/HeaderHome";
 
 export default function TabHome({
   screens = [],
   showHeader = true,
-  backgroundColor = "#fff",
+  backgroundColor = "#FF3333",
   customHeader: HeaderComponent = HeaderHome,
 }: TabCustomProps) {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: "#fff",
         tabBarButton: HapticTab,
         tabBarBackground: () => (
           <View
@@ -41,6 +37,10 @@ export default function TabHome({
             backgroundColor: backgroundColor,
           },
         }),
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "bold",
+        },
       }}
     >
       {screens.map((screen, index) => {

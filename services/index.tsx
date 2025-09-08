@@ -5,4 +5,7 @@ export {
   getPropertyClass,
   getDetails,
   getClassReference,
+  getListHistory,
+  getListAttachFile,
+  getPreviewAttachFile,
 } from "./data/callApi";

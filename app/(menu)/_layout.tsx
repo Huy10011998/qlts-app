@@ -1,9 +1,7 @@
 import { Stack } from "expo-router";
-import { TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { SearchProvider } from "@/context/SearchContext";
 import React from "react";
-import { SearchIcon } from "@/components/SearchButton";
+import { HeaderDetails } from "@/components/header/HeaderDetails";
 
 export default function MenuLayout() {
   return (
@@ -11,20 +9,9 @@ export default function MenuLayout() {
       <Stack>
         <Stack.Screen
           name="taisan"
-          options={({ navigation }) => ({
+          options={() => ({
             title: "Tài sản",
-            headerStyle: { backgroundColor: "#FF3333" },
-            headerTintColor: "#fff",
-            headerTitleStyle: { fontWeight: "bold" },
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => navigation.canGoBack() && navigation.goBack()}
-                style={{ paddingHorizontal: 10 }}
-              >
-                <Ionicons name="arrow-back" size={24} color="#fff" />
-              </TouchableOpacity>
-            ),
-            headerRight: () => <SearchIcon />,
+            ...HeaderDetails({ showBackButton: true, showSearchButton: true }),
           })}
         />
       </Stack>

@@ -2,6 +2,7 @@ import axios from "axios";
 import { API_ENDPOINTS, BASE_URL } from "@/config";
 import { getValidToken } from "@/components/auth/AuthProvider";
 import { Conditions, Field } from "@/types";
+import { encode } from "base64-arraybuffer";
 
 export const getList = async (
   nameCLass: string,
@@ -243,5 +244,44 @@ export const getListAttachFile = async (
     if (__DEV__)
       console.error(`GetList Attach File ${nameCLass} API error:`, error);
     throw error;
+  }
+};
+
+export const getPreviewAttachFile = async (
+  name: string,
+  path: string,
+  nameClass: string
+) => {
+  try {
+    const token = await getValidToken();
+    if (!token) throw new Error("Không tìm thấy token.");
+
+    const response = await axios.post(
+      `${BASE_URL}/${nameClass}/preview-attach-file`,
+      { name, path, isMobile: true },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "arraybuffer",
+        timeout: 10000, // 10 giây
+      }
+    );
+
+    const base64Data = encode(response.data);
+
+    return {
+      headers: response.headers,
+      data: base64Data,
+    };
+  } catch (error: any) {
+    if (__DEV__) {
+      console.error(`GetPreview Attach File ${nameClass} API error:`, error);
+    }
+    // Bổ sung message rõ hơn
+    const message =
+      error.response?.data?.message || error.message || "Lỗi không xác định";
+    throw new Error(message);
   }
 };

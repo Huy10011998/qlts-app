@@ -168,3 +168,7 @@ export interface MenuItemComponent {
   onPress?: () => void;
   notificationCount?: number;
 }
+
+export type ListCardAttachFileProps = CardItemProps & {
+  onView?: (item: any) => void;
+};

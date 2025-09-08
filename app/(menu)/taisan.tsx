@@ -231,6 +231,7 @@ export default function MenuScreen() {
           paddingVertical: isSearchOpen ? 0 : 12,
           paddingHorizontal: 12,
         }}
+        style={{ backgroundColor: "#fff" }}
       />
     </View>
   );
