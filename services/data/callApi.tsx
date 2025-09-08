@@ -205,3 +205,43 @@ export const getListHistory = async (id: number, nameCLass: string) => {
     throw error;
   }
 };
+
+export const getListAttachFile = async (
+  nameCLass: string,
+  orderby: string,
+  pageSize: number,
+  skipSize: number,
+  searchText: string,
+  conditions: Conditions[],
+  conditionsAll: Conditions[]
+) => {
+  try {
+    const token = await getValidToken();
+    if (!token) {
+      throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+    }
+
+    const config = {
+      method: "POST" as const,
+      url: `${BASE_URL}/${nameCLass}/get-attach-file`,
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        orderby,
+        pageSize,
+        skipSize,
+        searchText,
+        conditions,
+        conditionsAll,
+      },
+    };
+    const response = await axios(config);
+    return response.data;
+  } catch (error) {
+    if (__DEV__)
+      console.error(`GetList Attach File ${nameCLass} API error:`, error);
+    throw error;
+  }
+};

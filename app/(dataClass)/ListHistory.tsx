@@ -21,15 +21,15 @@ import {
   Field,
   ListContainerProps,
   PropertyResponse,
-  SearchBarProps,
+  SearchInputProps,
 } from "@/types";
 import { SqlOperator, TypeProperty } from "@/utils/enum";
 import { getListHistory } from "@/services/data/callApi";
-import ListCardHistory from "./ListCardHistory";
 import { useParams } from "@/hooks/useParams";
 import orderBy from "lodash/orderBy";
+import ListCardHistory from "@/components/list/ListCardHistory";
 
-export function SearchBar({ visible, value, onChange }: SearchBarProps) {
+export function SearchBar({ visible, value, onChange }: SearchInputProps) {
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {

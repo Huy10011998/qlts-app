@@ -4,7 +4,8 @@ import { TabContentProps } from "@/types";
 import GroupList from "../GroupList";
 import CenterText from "../theme/ThemedCenterText";
 import DeTailsTab from "../DetailsTab";
-import ListHistory from "../list/ListHistory";
+import ListHistory from "@/app/(dataClass)/ListHistory";
+import ListAttachFile from "@/app/(dataClass)/ListAttachFile";
 
 export default function TabContent({
   activeTab,
@@ -33,7 +34,7 @@ export default function TabContent({
     details: <DeTailsTab />,
     notes: <CenterText text={item?.notes ?? "---"} />,
     history: <ListHistory />,
-    attach: <CenterText text="Tệp content" />,
+    attach: <ListAttachFile />,
   };
 
   return tabContentMap[activeTab] || <CenterText text="Tab không hợp lệ" />;

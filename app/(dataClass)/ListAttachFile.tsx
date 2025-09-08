@@ -2,20 +2,16 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
 import { normalizeText } from "@/utils/helper";
 import IsLoading from "@/components/ui/IconLoading";
-import { useRouter } from "expo-router";
-import { getFieldActive, getList, getPropertyClass } from "@/services";
-import { Field, ListContainerProps, PropertyResponse } from "@/types";
-import { SqlOperator, TypeProperty } from "@/utils/enum";
+import { Conditions } from "@/types";
 import { useParams } from "@/hooks/useParams";
-import ListCardAsset from "@/components/list/ListCardAsset";
+import ListCardAttachFile from "@/components/list/ListCardAttachFile";
 import { useSearch } from "@/context/SearchContext";
 import { SearchInput } from "@/components/SearchButton";
+import { getListAttachFile } from "@/services/data/callApi";
+import { SqlOperator, TypeProperty } from "@/utils/enum";
 
-export default function ListContainer({ name, path }: ListContainerProps) {
-  const [taisan, setTaiSan] = useState<Record<string, any>[]>([]);
-  const [fieldActive, setFieldActive] = useState<Field[]>([]);
-  const [fieldShowMobile, setFieldShowMobile] = useState<Field[]>([]);
-  const [propertyClass, setPropertyClass] = useState<PropertyResponse>();
+export default function ListAttachFile() {
+  const [file, setFile] = useState<Record<string, any>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [skipSize, setSkipSize] = useState(0);
@@ -24,42 +20,26 @@ export default function ListContainer({ name, path }: ListContainerProps) {
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const { isSearchOpen } = useSearch();
+  const { id, nameClass: paramNameClass } = useParams();
+  const nameClass = paramNameClass;
+  const pageSize = 0;
 
-  const router = useRouter();
-  const { idRoot, nameClass: paramNameClass, propertyReference } = useParams();
-  const nameClass = name || paramNameClass;
-  const pageSize = 20;
-
-  const conditions = useMemo(() => {
-    return propertyReference && idRoot
-      ? [
-          {
-            property: propertyReference,
-            operator: SqlOperator.Equals,
-            value: String(idRoot),
-            type: TypeProperty.Int,
-          },
-        ]
-      : [];
-  }, [propertyReference, idRoot]);
-
-  const handlePress = async (item: Record<string, any>) => {
-    try {
-      router.push({
-        pathname: `/taisan/${path || "details"}` as any,
-        params: {
-          id: String(item.id),
-          field: JSON.stringify(fieldActive),
-          nameClass: nameClass,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Lỗi", `Không thể tải chi tiết ${nameClass}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const conditions = useMemo<Conditions[]>(() => {
+    return [
+      {
+        property: "ID_Class",
+        operator: SqlOperator.Equals,
+        value: String(id ?? ""),
+        type: TypeProperty.Int,
+      },
+      {
+        property: "Name_Class",
+        operator: SqlOperator.Equals,
+        value: String(nameClass ?? ""),
+        type: TypeProperty.String,
+      },
+    ];
+  }, [id, nameClass]);
 
   const fetchData = useCallback(
     async (isLoadMore = false) => {
@@ -69,31 +49,14 @@ export default function ListContainer({ name, path }: ListContainerProps) {
       else setIsLoading(true);
 
       try {
-        if (!isLoadMore && fieldActive.length === 0) {
-          const responseFieldActive = await getFieldActive(nameClass);
-          const activeFields = responseFieldActive?.data || [];
-          setFieldActive(activeFields);
-
-          const showMobileFields = activeFields.filter(
-            (f: any) => f.isShowMobile
-          );
-          setFieldShowMobile(showMobileFields);
-        }
-
-        if (!isLoadMore && !propertyClass) {
-          const responsePropertyClass = await getPropertyClass(nameClass);
-          setPropertyClass(responsePropertyClass?.data);
-        }
-
         const currentSkip = isLoadMore ? skipSize : 0;
 
-        const response = await getList(
+        const response = await getListAttachFile(
           nameClass,
           "",
           pageSize,
           currentSkip,
           searchText,
-          fieldActive,
           conditions,
           []
         );
@@ -102,10 +65,10 @@ export default function ListContainer({ name, path }: ListContainerProps) {
         const totalItems = response?.data?.totalCount || 0;
 
         if (isLoadMore) {
-          setTaiSan((prev) => [...prev, ...newItems]);
+          setFile((prev) => [...prev, ...newItems]);
           setSkipSize(currentSkip + pageSize);
         } else {
-          setTaiSan(newItems);
+          setFile(newItems);
           setSkipSize(pageSize);
         }
 
@@ -113,13 +76,13 @@ export default function ListContainer({ name, path }: ListContainerProps) {
       } catch (error) {
         if (__DEV__) console.error("API error:", error);
         Alert.alert("Lỗi", "Không thể tải dữ liệu.");
-        if (!isLoadMore) setTaiSan([]);
+        if (!isLoadMore) setFile([]);
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
       }
     },
-    [nameClass, fieldActive, propertyClass, skipSize, searchText, conditions]
+    [nameClass, skipSize, searchText, conditions]
   );
 
   useEffect(() => {
@@ -130,6 +93,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
     setIsFirstLoad(false);
   }, [nameClass]);
 
+  // search debounce
   useEffect(() => {
     if (isFirstLoad || !nameClass) return;
     const timeout = setTimeout(() => {
@@ -139,7 +103,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
   }, [searchText, nameClass]);
 
   const handleLoadMore = () => {
-    if (taisan.length < total && !isLoadingMore) {
+    if (file.length < total && !isLoadingMore) {
       fetchData(true);
     }
   };
@@ -157,16 +121,9 @@ export default function ListContainer({ name, path }: ListContainerProps) {
       )}
 
       <FlatList
-        data={taisan}
+        data={file}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <ListCardAsset
-            item={item}
-            fields={fieldShowMobile}
-            icon={propertyClass?.iconMobile || ""}
-            onPress={handlePress}
-          />
-        )}
+        renderItem={({ item }) => <ListCardAttachFile item={item} />}
         contentContainerStyle={{ paddingBottom: 100 }}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
@@ -174,7 +131,7 @@ export default function ListContainer({ name, path }: ListContainerProps) {
         ListHeaderComponent={
           <View style={styles.stickyHeader}>
             <Text style={styles.header}>
-              Tổng số tài sản: {total} (Đã tải: {taisan.length})
+              Tổng số tệp: {total} (Đã tải: {file.length})
             </Text>
           </View>
         }

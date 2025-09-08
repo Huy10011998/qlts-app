@@ -10,12 +10,12 @@ import { TAB_ITEMS, TabItem } from "@/app/(dataClass)/details";
 // Props cho component CardItem
 export interface CardItemProps {
   item: Record<string, any>;
-  fields: Field[];
+  fields?: Field[];
   icon?: string;
-  onPress: (item: Record<string, any>) => void;
+  onPress?: (item: Record<string, any>) => void;
 }
 // Props cho SearchBar
-export interface SearchBarProps {
+export interface SearchInputProps {
   visible: boolean;
   value: string;
   onChange: (text: string) => void;

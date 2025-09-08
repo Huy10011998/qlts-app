@@ -2,6 +2,8 @@ import { Stack } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchProvider } from "@/context/SearchContext";
+import React from "react";
+import { SearchIcon } from "@/components/SearchButton";
 
 export default function MenuLayout() {
   return (
@@ -22,6 +24,7 @@ export default function MenuLayout() {
                 <Ionicons name="arrow-back" size={24} color="#fff" />
               </TouchableOpacity>
             ),
+            headerRight: () => <SearchIcon />,
           })}
         />
       </Stack>

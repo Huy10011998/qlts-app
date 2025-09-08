@@ -5,14 +5,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import CustomHeader from "@/components/header/HeaderOptions";
 import { TabCustomProps } from "@/types";
+import HeaderHome from "../header/HeaderHome";
 
-export default function TabCustom({
+export default function TabHome({
   screens = [],
-  showHeader = true, // default value nếu tab không định nghĩa riêng
+  showHeader = true,
   backgroundColor = "#fff",
-  customHeader: HeaderComponent = CustomHeader,
+  customHeader: HeaderComponent = HeaderHome,
 }: TabCustomProps) {
   const colorScheme = useColorScheme();
 
@@ -53,7 +53,7 @@ export default function TabCustom({
               headerShown:
                 screen.showHeader !== undefined
                   ? screen.showHeader
-                  : showHeader, // ưu tiên giá trị riêng, fallback về default
+                  : showHeader,
               header: () => <HeaderComponent />,
               tabBarIcon: ({ color }) => (
                 <Ionicons name={screen.icon} size={24} color={color} />

@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         router.replace("/");
       }
     })();
-  }, []);
+  }, [router]);
 
   return (
     <AuthContext.Provider value={{ token, setToken, setRefreshToken, logout }}>

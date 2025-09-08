@@ -1,10 +1,10 @@
 import { View } from "react-native";
-import TabCustom from "@/components/tabs/TabOptions";
+import TabHome from "@/components/tabs/TabHome";
 
 export default function TabLayout() {
   return (
     <View style={{ flex: 1 }}>
-      <TabCustom
+      <TabHome
         screens={[
           {
             name: "trangchu",

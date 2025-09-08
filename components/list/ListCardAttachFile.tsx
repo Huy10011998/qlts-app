@@ -1,17 +1,11 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getFieldValue } from "@/utils/helper";
 import { CardItemProps } from "@/types";
 
-export default function ListCardItem({
-  item,
-  fields,
-  icon,
-  onPress,
-}: CardItemProps) {
+export default function ListCardAttachFile({ item, icon }: CardItemProps) {
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(item)}>
+    <View style={styles.card}>
       <View style={styles.avatar}>
         <Ionicons
           name={
@@ -21,15 +15,12 @@ export default function ListCardItem({
           color="#FF3333"
         />
       </View>
+
       <View style={styles.info}>
-        {fields.map((field) => (
-          <Text key={field.name} style={styles.text}>
-            <Text style={styles.label}>{field.moTa}: </Text>
-            {getFieldValue(item, field)}
-          </Text>
-        ))}
+        <Text style={styles.label}>{item.moTa}</Text>
+        <Text style={styles.text}>{item.name || "Không có tên file"}</Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -46,6 +37,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
+    alignItems: "center",
   },
   avatar: {
     width: 48,
@@ -57,6 +49,6 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   info: { flex: 1 },
-  text: { fontSize: 14, color: "#000", marginBottom: 2 },
-  label: { fontWeight: "bold", color: "#000" },
+  text: { fontSize: 14, color: "#444", marginTop: 4 },
+  label: { fontWeight: "bold", color: "#000", fontSize: 14 },
 });
